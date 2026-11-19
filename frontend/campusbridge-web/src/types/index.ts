@@ -37,7 +37,10 @@ export interface Job {
   deadline: string; // ISO date, e.g. "2026-12-15"
   description: string;
   rules: EligibilityRule;
+  postedBy?: string;
 }
+
+export type NewJobInput = Omit<Job, 'id' | 'postedBy'>;
 
 export type ApplicationStatus =
   | 'APPLIED'
@@ -59,6 +62,13 @@ export interface StudentProfile {
   cgpa: number;
   activeBacklogs: number;
   skills: string[];
+}
+
+export interface Applicant {
+  application: Application;
+  name: string;
+  email: string;
+  profile: StudentProfile | null;
 }
 
 export type EligibilityRuleKey = 'BRANCH' | 'CGPA' | 'BACKLOGS' | 'SKILLS';

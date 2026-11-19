@@ -1,13 +1,15 @@
-import type { Job } from '../types';
+import type { Job, NewJobInput } from '../types';
 
-// MOCK service. Later, replace with axios calls to GET /api/jobs and GET /api/jobs/{id}.
+// MOCK service. Later, replace with axios calls (GET /api/jobs, GET /api/jobs/{id}, POST /api/jobs, GET /api/jobs/mine).
+
+const JOBS_STORAGE_KEY = 'cb_jobs';
 
 const delay = (ms = 400): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 
-const MOCK_JOBS: Job[] = [
+const SEED_JOBS: Job[] = [
   {
     id: 'job-1',
     title: 'Java developer',
@@ -22,6 +24,7 @@ const MOCK_JOBS: Job[] = [
       maxBacklogs: 0,
       requiredSkills: ['Java', 'SQL', 'Spring Boot'],
     },
+    postedBy: 'seed',
   },
   {
     id: 'job-2',
@@ -37,6 +40,7 @@ const MOCK_JOBS: Job[] = [
       maxBacklogs: 0,
       requiredSkills: ['React', 'TypeScript', 'Tailwind'],
     },
+    postedBy: 'seed',
   },
   {
     id: 'job-3',
@@ -52,6 +56,7 @@ const MOCK_JOBS: Job[] = [
       maxBacklogs: 1,
       requiredSkills: ['Java', 'DSA'],
     },
+    postedBy: 'seed',
   },
   {
     id: 'job-4',
@@ -67,6 +72,7 @@ const MOCK_JOBS: Job[] = [
       maxBacklogs: 0,
       requiredSkills: ['Python', 'SQL'],
     },
+    postedBy: 'seed',
   },
   {
     id: 'job-5',
@@ -82,15 +88,77 @@ const MOCK_JOBS: Job[] = [
       maxBacklogs: 0,
       requiredSkills: ['Java', 'Spring Boot', 'PostgreSQL', 'Docker'],
     },
+    postedBy: 'seed',
   },
 ];
 
+function getStoredJobs(): Job[] {
+  try {
+    const raw = localStorage.getItem(JOBS_STORAGE_KEY);
+    if (!raw) {
+      localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(SEED_JOBS));
+      return SEED_JOBS;
+    }
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed as Job[];
+    }
+    localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(SEED_JOBS));
+    return SEED_JOBS;
+  } catch {
+    return SEED_JOBS;
+  }
+}
+
+function saveStoredJobs(jobs: Job[]): void {
+  localStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
+}
+
 export async function getJobs(): Promise<Job[]> {
   await delay(400);
-  return MOCK_JOBS;
+  return getStoredJobs();
 }
 
 export async function getJobById(id: string): Promise<Job | undefined> {
   await delay(200);
-  return MOCK_JOBS.find((job) => job.id === id);
+  const jobs = getStoredJobs();
+  return jobs.find((job) => job.id === id);
+}
+
+export async function createJob(
+  recruiterId: string,
+  input: NewJobInput
+): Promise<Job> {
+  await delay(400);
+
+  // Validate deadline: must be today or later in local date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const deadlineDate = new Date(`${input.deadline}T00:00:00`);
+  if (deadlineDate.getTime() < today.getTime()) {
+    throw new Error('Deadline must be today or later.');
+  }
+
+  // Validate allowed branches: at least one
+  if (!input.rules.allowedBranches || input.rules.allowedBranches.length === 0) {
+    throw new Error('Add at least one allowed branch.');
+  }
+
+  const jobs = getStoredJobs();
+  const newJob: Job = {
+    ...input,
+    id: crypto.randomUUID(),
+    postedBy: recruiterId,
+  };
+
+  jobs.push(newJob);
+  saveStoredJobs(jobs);
+
+  return newJob;
+}
+
+export async function getJobsByRecruiter(recruiterId: string): Promise<Job[]> {
+  await delay(400);
+  const jobs = getStoredJobs();
+  return jobs.filter((job) => job.postedBy === recruiterId);
 }

@@ -1,28 +1,25 @@
-import {
-  Briefcase,
-  ClipboardList,
-  LayoutDashboard,
-  LogOut,
-  UserRound,
-} from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ComponentType, ReactElement } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 
 export interface NavItem {
   to: string;
   label: string;
   icon: LucideIcon | ComponentType<{ className?: string }>;
+  end?: boolean;
+  isActive?: (pathname: string) => boolean;
 }
 
 interface DashboardLayoutProps {
-  navItems?: NavItem[];
+  nav: NavItem[];
 }
 
-export function DashboardLayout({ navItems }: DashboardLayoutProps = {}): ReactElement {
+export function DashboardLayout({ nav }: DashboardLayoutProps): ReactElement {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = (): void => {
     logout();
@@ -30,18 +27,6 @@ export function DashboardLayout({ navItems }: DashboardLayoutProps = {}): ReactE
   };
 
   const roleTitle = user?.role === 'STUDENT' ? 'Student portal' : 'Recruiter portal';
-
-  const defaultItems: NavItem[] =
-    user?.role === 'STUDENT'
-      ? [
-          { to: '/student', label: 'Dashboard', icon: LayoutDashboard },
-          { to: '/student/jobs', label: 'Jobs', icon: Briefcase },
-          { to: '/student/applications', label: 'Applications', icon: ClipboardList },
-          { to: '/student/profile', label: 'Profile', icon: UserRound },
-        ]
-      : [{ to: '/recruiter', label: 'Dashboard', icon: LayoutDashboard }];
-
-  const items = navItems ?? defaultItems;
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
@@ -53,20 +38,23 @@ export function DashboardLayout({ navItems }: DashboardLayoutProps = {}): ReactE
         </div>
         <div className="flex items-center gap-3">
           <nav className="flex items-center gap-1">
-            {items.map((item) => {
+            {nav.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  end={item.to === '/student' || item.to === '/recruiter'}
-                  className={({ isActive }) =>
-                    `flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                      isActive
+                  end={item.end}
+                  className={({ isActive: routerIsActive }) => {
+                    const active = item.isActive
+                      ? item.isActive(location.pathname)
+                      : routerIsActive;
+                    return `flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                      active
                         ? 'bg-brand/10 text-brand font-semibold'
                         : 'text-ink hover:bg-paper'
-                    }`
-                  }
+                    }`;
+                  }}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
@@ -96,20 +84,23 @@ export function DashboardLayout({ navItems }: DashboardLayoutProps = {}): ReactE
           </div>
 
           <nav className="mt-8 flex flex-col gap-1.5">
-            {items.map((item) => {
+            {nav.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  end={item.to === '/student' || item.to === '/recruiter'}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      isActive
+                  end={item.end}
+                  className={({ isActive: routerIsActive }) => {
+                    const active = item.isActive
+                      ? item.isActive(location.pathname)
+                      : routerIsActive;
+                    return `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      active
                         ? 'bg-brand/10 text-brand font-semibold'
                         : 'text-ink hover:bg-paper'
-                    }`
-                  }
+                    }`;
+                  }}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
