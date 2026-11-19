@@ -4,12 +4,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   variant?: 'primary' | 'secondary';
   isLoading?: boolean;
+  loadingText?: ReactNode;
 }
 
 export function Button({
   children,
   variant = 'primary',
   isLoading = false,
+  loadingText = 'Please wait...',
   disabled,
   type = 'button',
   className = '',
@@ -30,7 +32,7 @@ export function Button({
       className={`${baseStyles} ${variantStyles} ${className}`}
       {...rest}
     >
-      {isLoading ? 'Please wait...' : children}
+      {isLoading ? loadingText : children}
     </button>
   );
 }

@@ -1,14 +1,61 @@
 import { Check, X } from 'lucide-react';
+import { useState } from 'react';
 import type { ReactElement } from 'react';
 import { evaluateEligibility } from '../features/eligibility/evaluateEligibility';
-import type { Job, StudentProfile } from '../types';
+import type { Application, ApplicationStatus, Job, StudentProfile } from '../types';
+import { Button } from './Button';
 
 interface JobCardProps {
   job: Job;
   profile?: StudentProfile | null;
+  application?: Application;
+  onApply?: () => void;
+  applyError?: string | null;
+  isApplying?: boolean;
 }
 
-export function JobCard({ job, profile }: JobCardProps): ReactElement {
+function getStatusBadgeClasses(status: ApplicationStatus): string {
+  switch (status) {
+    case 'APPLIED':
+      return 'border border-blue-200 bg-blue-50 text-blue-700';
+    case 'SHORTLISTED':
+      return 'border border-amber-200 bg-amber-50 text-amber-700';
+    case 'SELECTED':
+      return 'border border-emerald-200 bg-emerald-50 text-emerald-700';
+    case 'REJECTED':
+      return 'border border-alert/20 bg-alert/10 text-alert';
+    case 'WITHDRAWN':
+      return 'border border-gray-200 bg-gray-100 text-gray-700';
+    default:
+      return 'border border-line bg-paper text-ink';
+  }
+}
+
+function getStatusLabel(status: ApplicationStatus): string {
+  switch (status) {
+    case 'APPLIED':
+      return 'Applied';
+    case 'SHORTLISTED':
+      return 'Shortlisted';
+    case 'SELECTED':
+      return 'Selected';
+    case 'REJECTED':
+      return 'Rejected';
+    case 'WITHDRAWN':
+      return 'Withdrawn';
+    default:
+      return status;
+  }
+}
+
+export function JobCard({
+  job,
+  profile,
+  application,
+  onApply,
+  applyError,
+  isApplying = false,
+}: JobCardProps): ReactElement {
   const formattedDeadline = new Date(
     `${job.deadline}T00:00:00`
   ).toLocaleDateString('en-IN', {
@@ -18,6 +65,9 @@ export function JobCard({ job, profile }: JobCardProps): ReactElement {
   });
 
   const eligibility = profile ? evaluateEligibility(profile, job.rules) : null;
+  const [currentTimestamp] = useState(() => Date.now());
+  const deadlineEnd = new Date(`${job.deadline}T23:59:59`);
+  const isDeadlinePassed = currentTimestamp > deadlineEnd.getTime();
 
   return (
     <article className="rounded-lg border border-line bg-white p-5">
@@ -104,6 +154,45 @@ export function JobCard({ job, profile }: JobCardProps): ReactElement {
           </ul>
         </div>
       )}
+
+      {/* Application / Action Footer */}
+      {application ? (
+        <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
+          <span className="text-xs font-semibold uppercase tracking-wider text-ink/60">
+            Applied
+          </span>
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(
+              application.status
+            )}`}
+          >
+            {getStatusLabel(application.status)}
+          </span>
+        </div>
+      ) : isDeadlinePassed ? (
+        <div className="mt-5 border-t border-line pt-4">
+          <p className="text-sm font-medium text-ink/60">Applications closed</p>
+        </div>
+      ) : eligibility?.eligible ? (
+        <div className="mt-5 border-t border-line pt-4">
+          <Button
+            onClick={onApply}
+            isLoading={isApplying}
+            loadingText="Applying..."
+            disabled={isApplying}
+          >
+            Apply
+          </Button>
+          {applyError && (
+            <div
+              role="alert"
+              className="mt-2 text-xs font-medium text-alert"
+            >
+              {applyError}
+            </div>
+          )}
+        </div>
+      ) : null}
     </article>
   );
 }

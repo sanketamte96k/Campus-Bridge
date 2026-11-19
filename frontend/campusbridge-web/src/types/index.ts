@@ -39,7 +39,20 @@ export interface Job {
   rules: EligibilityRule;
 }
 
-export type ApplicationStatus = 'APPLIED' | 'SHORTLISTED' | 'SELECTED' | 'REJECTED';
+export type ApplicationStatus =
+  | 'APPLIED'
+  | 'SHORTLISTED'
+  | 'SELECTED'
+  | 'REJECTED'
+  | 'WITHDRAWN';
+
+export interface Application {
+  id: string;
+  jobId: string;
+  userId: string;
+  status: ApplicationStatus;
+  appliedAt: string; // ISO datetime
+}
 
 export interface StudentProfile {
   branch: Branch;

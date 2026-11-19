@@ -1,4 +1,10 @@
-import { Briefcase, LayoutDashboard, LogOut, UserRound } from 'lucide-react';
+import {
+  Briefcase,
+  ClipboardList,
+  LayoutDashboard,
+  LogOut,
+  UserRound,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ComponentType, ReactElement } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
@@ -30,6 +36,7 @@ export function DashboardLayout({ navItems }: DashboardLayoutProps = {}): ReactE
       ? [
           { to: '/student', label: 'Dashboard', icon: LayoutDashboard },
           { to: '/student/jobs', label: 'Jobs', icon: Briefcase },
+          { to: '/student/applications', label: 'Applications', icon: ClipboardList },
           { to: '/student/profile', label: 'Profile', icon: UserRound },
         ]
       : [{ to: '/recruiter', label: 'Dashboard', icon: LayoutDashboard }];

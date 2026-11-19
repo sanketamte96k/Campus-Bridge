@@ -4,6 +4,7 @@ import type { ChangeEvent, ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/Button';
 import { JobCard } from '../../components/JobCard';
+import { useApply, useMyApplications } from '../../features/applications/useApplications';
 import { evaluateEligibility } from '../../features/eligibility/evaluateEligibility';
 import { useProfile } from '../../features/profile/useProfile';
 import { getJobs } from '../../services/jobService';
@@ -11,7 +12,15 @@ import { getJobs } from '../../services/jobService';
 export function Jobs(): ReactElement {
   const [searchTerm, setSearchTerm] = useState('');
   const [eligibleOnly, setEligibleOnly] = useState(false);
+  const [applyingJobId, setApplyingJobId] = useState<string | null>(null);
+  const [applyError, setApplyError] = useState<{
+    jobId: string;
+    message: string;
+  } | null>(null);
+
   const { profile, isLoading: isProfileLoading } = useProfile();
+  const { data: applications = [] } = useMyApplications();
+  const applyMutation = useApply();
 
   const {
     data: jobs = [],
@@ -25,6 +34,24 @@ export function Jobs(): ReactElement {
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleApply = (jobId: string): void => {
+    setApplyError(null);
+    setApplyingJobId(jobId);
+
+    applyMutation.mutate(jobId, {
+      onError: (err) => {
+        setApplyError({
+          jobId,
+          message:
+            err instanceof Error ? err.message : 'Could not submit application.',
+        });
+      },
+      onSettled: () => {
+        setApplyingJobId(null);
+      },
+    });
   };
 
   const filteredJobs = useMemo(() => {
@@ -123,9 +150,25 @@ export function Jobs(): ReactElement {
 
       {!isJobsLoading && !isError && filteredJobs.length > 0 && (
         <div className="flex flex-col gap-4">
-          {filteredJobs.map((job) => (
-            <JobCard key={job.id} job={job} profile={profile} />
-          ))}
+          {filteredJobs.map((job) => {
+            const activeApp = applications.find(
+              (app) => app.jobId === job.id && app.status !== 'WITHDRAWN'
+            );
+
+            return (
+              <JobCard
+                key={job.id}
+                job={job}
+                profile={profile}
+                application={activeApp}
+                onApply={() => handleApply(job.id)}
+                isApplying={applyingJobId === job.id}
+                applyError={
+                  applyError?.jobId === job.id ? applyError.message : null
+                }
+              />
+            );
+          })}
         </div>
       )}
     </div>
