@@ -19,10 +19,44 @@ export interface RegisterInput {
   role: Role;
 }
 
-// TODO: Define eligibility rule properties
-export interface EligibilityRule {}
+export type Branch = 'CS' | 'IT' | 'ENTC' | 'MECH' | 'CIVIL';
 
-// TODO: Define job properties
-export interface Job {}
+export interface EligibilityRule {
+  allowedBranches: Branch[];
+  minCgpa: number;
+  maxBacklogs: number;
+  requiredSkills: string[];
+}
+
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  packageLpa: number;
+  deadline: string; // ISO date, e.g. "2026-12-15"
+  description: string;
+  rules: EligibilityRule;
+}
 
 export type ApplicationStatus = 'APPLIED' | 'SHORTLISTED' | 'SELECTED' | 'REJECTED';
+
+export interface StudentProfile {
+  branch: Branch;
+  cgpa: number;
+  activeBacklogs: number;
+  skills: string[];
+}
+
+export type EligibilityRuleKey = 'BRANCH' | 'CGPA' | 'BACKLOGS' | 'SKILLS';
+
+export interface EligibilityCheck {
+  rule: EligibilityRuleKey;
+  passed: boolean;
+  message: string;
+}
+
+export interface EligibilityResult {
+  eligible: boolean;
+  checks: EligibilityCheck[];
+}
