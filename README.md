@@ -1,40 +1,57 @@
-# CampusBridge – Intelligent Campus Recruitment & Career Intelligence Platform
+# CampusBridge – Intelligent campus recruitment and career intelligence platform
 
-CampusBridge is a centralized, role-based campus recruitment management and career intelligence platform designed for higher education institutions. It streamlines the end-to-end placement lifecycle—connecting students, corporate recruiters, placement officers (TPOs), and administrators—while integrating AI-driven career guidance and resume intelligence.
-
----
-
-## 📌 Project Status
-
-> **Current Stage:** `Phase 0: Planning & Setup`  
-> **Status:** Architecture designed, software requirement specifications drafted, and repository initialized. Source code development has not yet begun.
+CampusBridge is a centralized, role-based campus recruitment management and career intelligence platform designed for higher education institutions. It connects students, corporate recruiters, placement officers (TPOs), and administrators, while integrating AI-driven career guidance and resume intelligence.
 
 ---
 
-## 🎯 Problem Statement
+## Project status
+
+Frontend MVP complete (React 19, TypeScript, Tailwind CSS, TanStack Query). It runs on mock services stored in the browser (localStorage), so the full placement workflow works without a backend. The Spring Boot API is the next phase.
+
+- [x] Role-based auth (student, recruiter) with protected routes
+- [x] Student profile and job browsing with search
+- [x] Rule-based eligibility engine with per-rule pass or fail reasons (unit tested)
+- [x] Apply and withdraw with duplicate and deadline rules (unit tested)
+- [x] Recruiter job posting, applicant review, and a validated status workflow (unit tested)
+- [ ] Spring Boot REST API with PostgreSQL and JWT
+- [ ] AI skill-gap analyzer, resume analyzer, and career assistant
+- [ ] Docker, CI/CD, and deployment
+
+---
+
+## Features
+
+- **Students:** save an academic profile, browse jobs, see exactly why they are or aren't eligible for each job, apply, withdraw, and track status.
+- **Recruiters:** post jobs with eligibility rules, review applicants with an eligibility summary, and move candidates through Shortlisted, Selected, or Rejected.
+- **Eligibility engine:** a pure TypeScript function that checks branch, CGPA, active backlogs, and required skills, and returns a reason for each rule. It is rule-based, not AI.
+- **Status workflow:** allowed transitions are defined in one tested function (for example, a rejected candidate can never return to shortlisted).
+
+---
+
+## Problem statement
 
 Traditional campus placement operations are often plagued by:
-- **Disorganized Communication:** Reliance on scattered spreadsheets, messaging groups, and notice boards leads to missed deadlines and clerical errors.
-- **Manual Eligibility Screening:** Placement officers spend hundreds of hours manually verifying CGPA, backlog criteria, and branch eligibility for each job drive.
-- **Lack of Application Transparency:** Students experience anxiety due to opaque shortlisting stages and a lack of real-time application tracking.
-- **Unprepared Candidates & Skill Gaps:** Students apply to jobs without clear insight into how well their resumes match job descriptions, missing crucial domain skills.
-- **Reporting Inefficiencies:** Placement cells struggle to compile accredited, real-time institutional placement reports for audits and accreditation bodies (e.g., NAAC, NBA).
+- **Disorganized communication:** reliance on scattered spreadsheets, messaging groups, and notice boards leads to missed deadlines and clerical errors.
+- **Manual eligibility screening:** placement officers spend hundreds of hours manually verifying CGPA, backlog criteria, and branch eligibility for each job drive.
+- **Lack of application transparency:** students experience anxiety due to opaque shortlisting stages and a lack of real-time application tracking.
+- **Unprepared candidates and skill gaps:** students apply to jobs without clear insight into how well their resumes match job descriptions, missing crucial domain skills.
+- **Reporting inefficiencies:** placement cells struggle to compile accredited, real-time institutional placement reports for audits and accreditation bodies (e.g., NAAC, NBA).
 
 ---
 
-## 🚀 Objectives
+## Objectives
 
-1. **Automate Drive & Eligibility Management:** Provide an automated rule engine that computes student eligibility against drive criteria instantly.
-2. **Deliver End-to-End Transparency:** Offer real-time tracking across every stage: application, shortlisting, technical tests, interviews, and final offers.
-3. **Embed AI-Powered Career Intelligence:** Equip students with an AI Resume Analyzer for ATS feedback and an AI Career Assistant for targeted skill-gap roadmaps.
-4. **Empower Placement Cells with Actionable Analytics:** Generate live dashboards and exportable institutional reports on placement rates, CTC distributions, and recruiter trends.
-5. **Ensure Secure, Role-Based Collaboration:** Implement enterprise-grade authentication and authorization tailored specifically for academic environments.
+1. **Automate drive and eligibility management:** provide an automated rule engine that computes student eligibility against drive criteria instantly.
+2. **Deliver end-to-end transparency:** offer real-time tracking across every stage: application, shortlisting, technical tests, interviews, and final offers.
+3. **Embed AI-powered career intelligence:** equip students with an AI Resume Analyzer for ATS feedback and an AI Career Assistant for targeted skill-gap roadmaps.
+4. **Empower placement cells with actionable analytics:** generate live dashboards and exportable institutional reports on placement rates, CTC distributions, and recruiter trends.
+5. **Ensure secure, role-based collaboration:** implement enterprise-grade authentication and authorization tailored specifically for academic environments.
 
 ---
 
-## 👥 User Roles & Capabilities
+## User roles
 
-| Role | Key Capabilities |
+| Role | Key capabilities |
 | :--- | :--- |
 | **Student** | Builds profile, tracks academic verification, browses eligible placement drives, applies with 1-click, tracks status, schedules interview slots, analyzes resume with AI, and reviews skill-gap recommendations. |
 | **Recruiter** | Registers company profile, posts job openings and drive details, sets eligibility criteria, reviews shortlisted applicants, manages interview rounds, and releases offers. |
@@ -43,58 +60,90 @@ Traditional campus placement operations are often plagued by:
 
 ---
 
-## ✨ Main Features
+## How to run the frontend
 
-- **Role-Based Access Control (RBAC):** JWT-backed authentication ensuring role isolation for Students, Recruiters, Placement Officers, and Administrators.
-- **Academic Record & Profile Verification:** Comprehensive student profiles with academic histories (10th, 12th, semester-wise SGPA/CGPA, active backlogs).
-- **Automated Eligibility Engine:** Instant validation against drive criteria (minimum CGPA, allowed branches, backlog thresholds, gap-year limits).
-- **Placement Drive & Application Lifecycle:** Multi-stage pipeline tracking (Applied &rarr; Shortlisted &rarr; Assessment &rarr; Technical Interview &rarr; HR Interview &rarr; Offered &rarr; Accepted).
-- **Interview Slot & Schedule Management:** Coordination of interview rounds, time slots, and meeting venues/links.
-- **Placement Analytics & Institutional Reports:** Department-wise hiring statistics, median/average/highest CTC analytics, and exportable reports (PDF/Excel).
-- **AI Resume Analyzer:** PDF resume parsing, ATS scoring against job descriptions, and contextual improvement recommendations.
-- **AI Career Assistant & Skill-Gap Analysis:** Identifies missing technical competencies against target job profiles and generates structured learning roadmaps.
-- **Notification Center:** In-app and email announcements for drive openings, interview calls, and results.
+Prerequisite: Node.js 20 or newer.
+
+```bash
+cd frontend/campusbridge-web
+npm install
+npm run dev
+npm test
+npm run build
+```
+
+The app opens on the URL Vite prints, usually http://localhost:5173.
+
+### Try it
+1. Register an account as a recruiter and post a job with eligibility rules.
+2. Register an account as a student and complete the academic profile.
+3. Browse the jobs list, inspect the eligibility reasons, and submit an application.
+4. Log back in as the recruiter, view the applicants list, and shortlist the student.
+5. Log back in as the student to see the updated application status.
 
 ---
 
-## 🛠️ Technology Stack
+## Frontend structure
+
+```text
+frontend/campusbridge-web/src/
+├── components/          # Reusable UI elements (Button, Field, JobCard, StatusBadge)
+├── features/            # Domain logic split by feature (auth, eligibility, applications, profile, recruiter)
+├── layouts/             # Page layouts for auth and role-based dashboards
+├── pages/               # Route views for auth, student, and recruiter flows
+├── routes/              # Routing configuration, protected route guards, and navigation definitions
+├── services/            # Mock APIs backed by localStorage that will become real API calls
+└── types/               # TypeScript interfaces, unions, and shared data models
+```
+
+Each mock service keeps the same function signatures the real API calls will have, so swapping in the Spring Boot backend will not require page changes.
+
+---
+
+## Screenshots
+
+<!-- Add screenshots of login, jobs with eligibility, and the recruiter applicants page here -->
+
+---
+
+## Technology stack
 
 ### Frontend
-- **Framework & Language:** React 18 with TypeScript
-- **Build Tool:** Vite
-- **Routing:** React Router v6
-- **HTTP Client:** Axios
-- **Styling:** Tailwind CSS (planned)
-- **Testing:** React Testing Library & Jest / Vitest
+- **Framework and language:** React 19 with TypeScript
+- **Build tool:** Vite
+- **Routing:** React Router v7
+- **Data fetching:** TanStack Query
+- **Styling:** Tailwind CSS v4
+- **Testing:** Vitest
 
-### Backend
-- **Language & Runtime:** Java 21 (LTS)
+### Backend (planned next phase)
+- **Language and runtime:** Java 21 (LTS)
 - **Framework:** Spring Boot 3.x
-- **Security:** Spring Security & JWT (JSON Web Tokens)
-- **Persistence & ORM:** Spring Data JPA & Hibernate
-- **Build Tool:** Apache Maven
-- **Testing:** JUnit 5 & Mockito
+- **Security:** Spring Security and JWT (JSON Web Tokens)
+- **Persistence and ORM:** Spring Data JPA and Hibernate
+- **Build tool:** Apache Maven
+- **Testing:** JUnit 5 and Mockito
 
 ### Database
 - **Engine:** PostgreSQL 16
 - **Design:** Relational schema with ACID guarantees and foreign key integrity
 
-### AI & Career Intelligence Service
-- **Runtime & Framework:** Python 3.11+ with FastAPI
-- **Data Validation:** Pydantic
-- **PDF Processing:** PyPDF / pdfplumber
-- **AI Integration:** External LLM API (Google Gemini / OpenAI) for structured JSON evaluations
+### AI and career intelligence service
+- **Runtime and framework:** Python 3.11+ with FastAPI
+- **Data validation:** Pydantic
+- **PDF processing:** PyPDF / pdfplumber
+- **AI integration:** External LLM API (Google Gemini / OpenAI) for structured JSON evaluations
 
-### Development Tools
-- **Version Control:** Git & GitHub
-- **API Testing:** Postman
-- **Containerization (Planned):** Docker & Docker Compose
+### Development tools
+- **Version control:** Git and GitHub
+- **API testing:** Postman
+- **Containerization (planned):** Docker and Docker Compose
 
 ---
 
-## 🏛️ Planned Architecture
+## Planned architecture
 
-CampusBridge follows a clean, decoupled architecture designed to remain beginner-friendly while maintaining professional separation of concerns:
+CampusBridge follows a clean, decoupled architecture designed to remain beginner-friendly while maintaining separation of concerns:
 
 ```text
                +-------------------------------------------+
@@ -113,7 +162,7 @@ CampusBridge follows a clean, decoupled architecture designed to remain beginner
                |   - Placement Analytics & Reporting       |
                +----------+---------------------+----------+
                           |                     |
-                   JDBC / SQL             Internal REST
+                    JDBC / SQL             Internal REST
                           |                     |
                           v                     v
 +---------------------------+   +------------------------------------+
@@ -132,7 +181,7 @@ CampusBridge follows a clean, decoupled architecture designed to remain beginner
 
 ---
 
-## 📁 Repository Structure
+## Repository structure
 
 ```text
 Campus-Bridge/
@@ -142,6 +191,9 @@ Campus-Bridge/
 │   ├── PROJECT_ROADMAP.md       # Phased implementation roadmap & deliverables
 │   └── SYSTEM_ARCHITECTURE.md   # Architectural designs, components, and data flows
 │
+├── frontend/
+│   └── campusbridge-web/        # React single-page application
+│
 ├── README.md                    # Project overview and high-level documentation
 ├── .gitignore                   # Version control exclusion rules
 └── .env.example                 # Environment variables template
@@ -149,16 +201,25 @@ Campus-Bridge/
 
 ---
 
-## 🔮 Future Scope
+## Next steps
 
-- **AI Mock Interview Simulator:** Voice-to-text interactive mock technical and behavioral interviews with automated rubric feedback.
-- **Alumni Mentorship Network:** Connecting placed alumni with graduating students for resume reviews and interview preparation.
-- **Video Proctored Assessment Integration:** Native coding and aptitude assessments with automated proctoring.
-- **University Federation Support:** Multi-campus tenant support enabling university systems to oversee multiple affiliated colleges.
-- **Mobile Companion Application:** Push notifications and QR-code check-ins for on-campus physical recruitment drives.
+1. **Spring Boot backend:** implement entities, PostgreSQL schema, JWT authentication, and rule-based eligibility evaluation in Java with JUnit test suites.
+2. **Connect frontend to API:** replace localStorage mock services in `src/services/` with Axios HTTP clients calling Spring Boot endpoints.
+3. **AI features:** implement the Python FastAPI microservice for ATS resume parsing and skill-gap career intelligence.
+4. **Docker and deployment:** create Dockerfiles, Docker Compose multi-container configuration, and automated deployment pipelines.
 
 ---
 
-## 📄 License & Attribution
+## Future scope
+
+- **AI mock interview simulator:** voice-to-text interactive mock technical and behavioral interviews with automated rubric feedback.
+- **Alumni mentorship network:** connecting placed alumni with graduating students for resume reviews and interview preparation.
+- **Video proctored assessment integration:** native coding and aptitude assessments with automated proctoring.
+- **University federation support:** multi-campus tenant support enabling university systems to oversee multiple affiliated colleges.
+- **Mobile companion application:** push notifications and QR-code check-ins for on-campus physical recruitment drives.
+
+---
+
+## License and attribution
 
 This project is developed for academic and campus recruitment management purposes. All documentation and architectural blueprints are maintained under the project repository.
