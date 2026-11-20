@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # Maven dependencies for Spring Boot backend
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+
+  # npm dependencies for React frontend
+  - package-ecosystem: "npm"
+    directory: "/frontend/campusbridge-web"
+    schedule:
+      interval: "weekly"
+
+  # GitHub Actions workflows and actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Docker dependencies for backend container
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+
+  # Docker dependencies for frontend container
+  - package-ecosystem: "docker"
+    directory: "/frontend/campusbridge-web"
+    schedule:
+      interval: "weekly"

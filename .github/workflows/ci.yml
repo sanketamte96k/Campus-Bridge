@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Java 21 & Spring Boot)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: campusbridge_test
+          MYSQL_USER: campusbridge
+          # CI container throwaway credentials (ephemeral test service)
+          MYSQL_PASSWORD: testpassword
+          MYSQL_ROOT_PASSWORD: rootpassword
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Run Maven verify
+        working-directory: backend
+        env:
+          DB_URL: jdbc:mysql://127.0.0.1:3306/campusbridge_test
+          # CI container throwaway credentials
+          DB_USERNAME: campusbridge
+          DB_PASSWORD: testpassword
+          JWT_SECRET: fake-ci-test-jwt-secret-key-that-is-at-least-32-chars-long
+        run: |
+          chmod +x ./mvnw
+          ./mvnw -B verify
+
+      - name: Upload Surefire Reports on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: backend/target/surefire-reports
+
+  frontend:
+    name: Frontend (React & TypeScript)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/campusbridge-web/package-lock.json
+
+      - name: Install dependencies, lint, test, and build
+        working-directory: frontend/campusbridge-web
+        run: |
+          npm ci
+          npm run lint
+          npm test
+          npm run build
+
+  docker:
+    name: Docker Build Validation
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend container image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend container image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend/campusbridge-web
+          file: ./frontend/campusbridge-web/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

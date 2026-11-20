@@ -1,5 +1,10 @@
 # CampusBridge – Intelligent campus recruitment and career intelligence platform
 
+[![CI](https://github.com/sanketamte96k/Campus-Bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/sanketamte96k/Campus-Bridge/actions/workflows/ci.yml)
+
+Continuous integration runs automated verification on every push and pull request to `main`.
+It validates the Spring Boot test suite against MySQL 8, executes frontend linting, tests, and production builds, and verifies Docker image creation.
+
 CampusBridge is a centralized, role-based campus recruitment management and career intelligence platform designed for higher education institutions. It connects students, corporate recruiters, placement officers (TPOs), and administrators, while integrating AI-driven career guidance and resume intelligence.
 
 ---
@@ -99,6 +104,16 @@ Optional environment variables:
 - `PORT`: Server HTTP port (defaults to `8080`)
 - `SPRING_PROFILES_ACTIVE`: Active profile (set to `dev` to enable demo seed accounts)
 - `CORS_ALLOWED_ORIGINS`: Allowed CORS origins (defaults to `http://localhost:5173,http://localhost:5174`)
+
+### Test database setup
+
+To run automated backend tests in isolation, create the dedicated test schema and assign user privileges:
+
+```sql
+CREATE DATABASE campusbridge_test;
+GRANT ALL PRIVILEGES ON campusbridge_test.* TO 'campusbridge'@'localhost';
+FLUSH PRIVILEGES;
+```
 
 ### PowerShell example
 

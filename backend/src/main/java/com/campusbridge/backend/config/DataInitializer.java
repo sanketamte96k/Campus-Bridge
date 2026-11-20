@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
-@Profile("dev")
+@Profile({"dev", "test"})
 public class DataInitializer implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
@@ -47,8 +47,8 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (userRepository.count() == 0) {
-            logger.info("Database is empty. Initializing seed data...");
+        if (!userRepository.existsByEmail("student@campusbridge.edu")) {
+            logger.info("Initializing seed demo accounts and job listings...");
 
             // 1. Seed Recruiter
             User recruiter = new User();
