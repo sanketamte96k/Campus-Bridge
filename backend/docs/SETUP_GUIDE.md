@@ -37,9 +37,9 @@ Default configurations are specified in `backend/src/main/resources/application.
 | Environment Variable | Description | Default Value |
 |---|---|---|
 | `DB_URL` | JDBC URL | `jdbc:mysql://localhost:3306/campusbridge` |
-| `DB_USERNAME` | Database username | `root` |
-| `DB_PASSWORD` | Database password | `Sanket@123` |
-| `JWT_SECRET` | HMAC-SHA256 256-bit secret | *Pre-configured secure default* |
+| `DB_USERNAME` | Database username | *(Required; no default)* |
+| `DB_PASSWORD` | Database password | *(Required; no default)* |
+| `JWT_SECRET` | HMAC-SHA256 256-bit secret | *(Required; minimum 32 chars)* |
 | `JWT_EXPIRATION_MS` | Token lifespan in ms | `86400000` (24 hours) |
 | `CORS_ALLOWED_ORIGINS`| Allowed frontend origins | `http://localhost:5173,http://localhost:5174` |
 | `PORT` | HTTP Server port | `8080` |

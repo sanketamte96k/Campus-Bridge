@@ -83,6 +83,86 @@ The app opens on the URL Vite prints, usually http://localhost:5173.
 
 ---
 
+## Run the backend locally
+
+Prerequisites: Java 21 (LTS) and MySQL 8 running locally on port 3306 with the `campusbridge` database created.
+
+### Required environment variables
+
+The backend requires the following environment variables to be set before starting. There are no hardcoded secret defaults in configuration files:
+- `DB_USERNAME`: Database username (e.g. `root`)
+- `DB_PASSWORD`: Database password (required; application fails to start if omitted)
+- `JWT_SECRET`: HMAC-SHA256 signing secret key (required; must be at least 32 characters long)
+
+Optional environment variables:
+- `DB_URL`: JDBC database URL (defaults to `jdbc:mysql://localhost:3306/campusbridge`)
+- `PORT`: Server HTTP port (defaults to `8080`)
+- `SPRING_PROFILES_ACTIVE`: Active profile (set to `dev` to enable demo seed accounts)
+- `CORS_ALLOWED_ORIGINS`: Allowed CORS origins (defaults to `http://localhost:5173,http://localhost:5174`)
+
+### PowerShell example
+
+```powershell
+# Set required environment variables using placeholders
+$env:DB_USERNAME = "root"
+$env:DB_PASSWORD = "your-database-password"
+$env:JWT_SECRET = "your-secure-random-jwt-secret-at-least-32-chars-long"
+
+# Run automated tests
+cd backend
+.\mvnw.cmd test
+
+# Start the Spring Boot application
+.\mvnw.cmd spring-boot:run
+```
+
+---
+
+## Run with Docker
+
+Run the entire platform (MySQL 8 database, Spring Boot API, and React frontend) with a single command.
+
+### Prerequisites
+- Docker and Docker Compose (Docker Desktop or Docker Engine v20.10+).
+
+### Quick start
+1. Copy the environment configuration template to `.env` and adjust passwords if needed:
+   ```bash
+   cp .env.example .env
+   ```
+2. Build and launch all container services:
+   ```bash
+   docker compose up --build
+   ```
+3. Open your browser at **http://localhost:3000**. Nginx serves the React SPA and proxies all `/api/` requests directly to the Spring Boot backend (`http://backend:8080`).
+
+### Stopping and data management
+- **Stop containers:**
+  ```bash
+  docker compose down
+  ```
+- **Wipe persistent database volume:**
+  ```bash
+  docker compose down -v
+  ```
+
+### Seeded demo logins (Local development only)
+When running with the default `SPRING_PROFILES_ACTIVE=dev` profile, `DataInitializer` automatically seeds test accounts on first database initialization:
+- **Recruiter:** `recruiter@campusbridge.edu` / `Password123!`
+- **Student:** `student@campusbridge.edu` / `Password123!`
+
+*(Note: These seeded credentials are for local demo and testing only; they are not created when running under production profiles.)*
+
+### Troubleshooting
+
+| Issue | Cause | Solution |
+| :--- | :--- | :--- |
+| **Port in use** | Host port 3000 or 3307 is already bound | Free the port or adjust the host-side port binding in `docker-compose.yml`. |
+| **Backend unhealthy** | Database is starting up or migration failed | Run `docker compose logs backend` to inspect logs; verify database health status with `docker compose ps`. |
+| **DB password mismatch** | `.env` passwords changed after volume creation | Run `docker compose down -v` first to wipe the stale volume, then re-run `docker compose up --build`. |
+
+---
+
 ## Frontend structure
 
 ```text

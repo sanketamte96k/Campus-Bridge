@@ -5,6 +5,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,27 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
+    @Value("${jwt.secret}")
     private String jwtSecret;
 
     @Value("${jwt.expiration-ms:86400000}")
     private long jwtExpirationMs;
+
+    public JwtService() {
+    }
+
+    public JwtService(String jwtSecret, long jwtExpirationMs) {
+        this.jwtSecret = jwtSecret;
+        this.jwtExpirationMs = jwtExpirationMs;
+        validateJwtSecret();
+    }
+
+    @PostConstruct
+    public void validateJwtSecret() {
+        if (jwtSecret == null || jwtSecret.isBlank() || jwtSecret.trim().length() < 32) {
+            throw new IllegalStateException("JWT_SECRET must be configured and must be at least 32 characters long.");
+        }
+    }
 
     private SecretKey getSigningKey() {
         byte[] keyBytes;

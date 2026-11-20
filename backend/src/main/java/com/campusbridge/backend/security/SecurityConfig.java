@@ -78,6 +78,7 @@ public class SecurityConfig {
                         // Public Endpoints
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/{id}", "/api/jobs/search").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/error").permitAll()
 
                         // Recruiter Endpoints
