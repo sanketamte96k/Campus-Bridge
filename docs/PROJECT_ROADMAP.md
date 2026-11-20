@@ -67,7 +67,7 @@ This roadmap outlines the phased development lifecycle for **CampusBridge**. It 
 
 ### Objectives
 - Initialize the Java 21 / Spring Boot 3 backend application.
-- Configure PostgreSQL database connectivity with Spring Data JPA and Hibernate.
+- Configure MySQL 8 database connectivity with Spring Data JPA and Hibernate.
 - Implement User entity schemas, Role-Based Access Control (RBAC), and stateless JWT authentication.
 
 ### Features Planned
@@ -86,14 +86,14 @@ This roadmap outlines the phased development lifecycle for **CampusBridge**. It 
 - Database migrations with Flyway or Hibernate schema generation.
 
 ### Expected Deliverables
-- Maven `pom.xml` configured with Spring Web, Security, Data JPA, PostgreSQL driver, and Lombok.
+- Maven `pom.xml` configured with Spring Web, Security, Data JPA, MySQL driver, and Lombok.
 - Clean layered backend package structure: `config`, `controller`, `dto`, `entity`, `exception`, `repository`, `service`.
 - Postman collection validating authentication and profile CRUD endpoints.
 
 ### Completion Criteria
 - Successful user registration and login yielding valid JWT tokens.
 - Secure endpoints reject unauthorized or role-mismatched requests with `401 Unauthorized` or `403 Forbidden`.
-- Student profile and academic records can be saved and retrieved from PostgreSQL.
+- Student profile and academic records can be saved and retrieved from MySQL 8.
 
 ---
 
@@ -246,7 +246,7 @@ This roadmap outlines the phased development lifecycle for **CampusBridge**. It 
 ### Features Planned
 - Backend unit and integration tests (JUnit 5, Mockito, SpringBootTest, Testcontainers).
 - Frontend component and integration tests (React Testing Library, Vitest).
-- Multi-container `docker-compose.yml` orchestrating PostgreSQL, Spring Boot, Python FastAPI, and React frontend.
+- Multi-container `docker-compose.yml` orchestrating MySQL 8, Spring Boot, Python FastAPI, and React frontend.
 - Production-ready environment variable configurations and logging setups.
 - API documentation generation using Springdoc OpenAPI / Swagger UI.
 
@@ -275,7 +275,7 @@ This roadmap outlines the phased development lifecycle for **CampusBridge**. It 
 | Phase | Title | Primary Tech | Key Deliverable |
 | :---: | :--- | :--- | :--- |
 | **0** | **Setup & Planning** | Markdown, Git | Architecture blueprints, SRS, Roadmap, .gitignore |
-| **1** | **Core Backend & DB** | Java 21, Spring Boot, PostgreSQL | Auth, JWT, RBAC, Student/Recruiter CRUD |
+| **1** | **Core Backend & DB** | Java 21, Spring Boot, MySQL 8 | Auth, JWT, RBAC, Student/Recruiter CRUD |
 | **2** | **Frontend Foundation** | React 18, TypeScript, Vite | Role dashboards, Auth UI, Protected routes |
 | **3** | **Placement Workflows** | Spring Boot, React, JPA | Eligibility engine, Drive lifecycle, Interviews |
 | **4** | **Analytics & Reports** | Spring Boot, Chart.js, Apache POI | Placement KPI dashboards, Excel/PDF exports |

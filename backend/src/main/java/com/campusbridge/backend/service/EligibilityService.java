@@ -7,6 +7,7 @@ import com.campusbridge.backend.dto.StudentProfileDto;
 import com.campusbridge.backend.enums.EligibilityRuleKey;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,10 +34,10 @@ public class EligibilityService {
 
         checks.add(new EligibilityCheckDto(EligibilityRuleKey.BRANCH, branchPassed, branchMessage));
 
-        // 2. CGPA check (equal passes)
-        double studentCgpa = profile.getCgpa() != null ? profile.getCgpa() : 0.0;
-        double minCgpa = rules.getMinCgpa() != null ? rules.getMinCgpa() : 0.0;
-        boolean cgpaPassed = studentCgpa >= minCgpa;
+        // 2. CGPA check (equal passes, compared with compareTo)
+        BigDecimal studentCgpa = profile.getCgpa() != null ? profile.getCgpa() : BigDecimal.ZERO;
+        BigDecimal minCgpa = rules.getMinCgpa() != null ? rules.getMinCgpa() : BigDecimal.ZERO;
+        boolean cgpaPassed = studentCgpa.compareTo(minCgpa) >= 0;
         String cgpaMessage = cgpaPassed
                 ? "Your CGPA (" + studentCgpa + ") meets the minimum of " + minCgpa + "."
                 : "Your CGPA (" + studentCgpa + ") is below the minimum of " + minCgpa + ".";

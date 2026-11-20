@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class DataInitializer implements CommandLineRunner {
             User recruiter = new User();
             recruiter.setName("Sarah Jenkins");
             recruiter.setEmail("recruiter@campusbridge.edu");
-            recruiter.setPassword(passwordEncoder.encode("Password123!"));
+            recruiter.setPasswordHash(passwordEncoder.encode("Password123!"));
             recruiter.setRole(Role.RECRUITER);
             User savedRecruiter = userRepository.save(recruiter);
 
@@ -59,7 +60,7 @@ public class DataInitializer implements CommandLineRunner {
             User student = new User();
             student.setName("Alex Rivera");
             student.setEmail("student@campusbridge.edu");
-            student.setPassword(passwordEncoder.encode("Password123!"));
+            student.setPasswordHash(passwordEncoder.encode("Password123!"));
             student.setRole(Role.STUDENT);
             User savedStudent = userRepository.save(student);
 
@@ -67,7 +68,7 @@ public class DataInitializer implements CommandLineRunner {
             StudentProfile profile = new StudentProfile();
             profile.setUser(savedStudent);
             profile.setBranch(Branch.CS);
-            profile.setCgpa(8.5);
+            profile.setCgpa(new BigDecimal("8.50"));
             profile.setActiveBacklogs(0);
             profile.setSkills(List.of("Java", "Spring Boot", "SQL", "React", "TypeScript", "Tailwind"));
             profileRepository.save(profile);
@@ -83,7 +84,7 @@ public class DataInitializer implements CommandLineRunner {
                             "Build robust enterprise backend services and scalable RESTful APIs with clean architecture.",
                             new EligibilityRuleEmbeddable(
                                     List.of(Branch.IT, Branch.CS),
-                                    7.5,
+                                    new BigDecimal("7.50"),
                                     0,
                                     List.of("Java", "SQL", "Spring Boot")
                             ),
@@ -98,7 +99,7 @@ public class DataInitializer implements CommandLineRunner {
                             "Craft responsive, user-friendly web interfaces and component systems with modern web standards.",
                             new EligibilityRuleEmbeddable(
                                     List.of(Branch.IT, Branch.CS, Branch.ENTC),
-                                    7.0,
+                                    new BigDecimal("7.00"),
                                     0,
                                     List.of("React", "TypeScript", "Tailwind")
                             ),
@@ -113,7 +114,7 @@ public class DataInitializer implements CommandLineRunner {
                             "Kickstart your engineering career through practical software engineering training and team mentorship.",
                             new EligibilityRuleEmbeddable(
                                     List.of(Branch.IT, Branch.CS, Branch.ENTC, Branch.MECH),
-                                    6.0,
+                                    new BigDecimal("6.00"),
                                     1,
                                     List.of("Java", "DSA")
                             ),
@@ -128,7 +129,7 @@ public class DataInitializer implements CommandLineRunner {
                             "Transform complex institutional datasets into actionable insights and automated reporting dashboards.",
                             new EligibilityRuleEmbeddable(
                                     List.of(Branch.IT, Branch.CS),
-                                    7.5,
+                                    new BigDecimal("7.50"),
                                     0,
                                     List.of("Python", "SQL")
                             ),
@@ -143,9 +144,9 @@ public class DataInitializer implements CommandLineRunner {
                             "Architect distributed backend systems and deploy containerized microservices to cloud infrastructure.",
                             new EligibilityRuleEmbeddable(
                                     List.of(Branch.IT, Branch.CS),
-                                    8.0,
+                                    new BigDecimal("8.00"),
                                     0,
-                                    List.of("Java", "Spring Boot", "PostgreSQL", "Docker")
+                                    List.of("Java", "Spring Boot", "MySQL", "Docker")
                             ),
                             savedRecruiter.getId()
                     )

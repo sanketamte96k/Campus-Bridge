@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public class EligibilityRuleEmbeddable {
     @Column(name = "branch", length = 20)
     private List<Branch> allowedBranches = new ArrayList<>();
 
-    @Column(name = "min_cgpa", nullable = false)
-    private Double minCgpa;
+    @Column(name = "min_cgpa", nullable = false, precision = 4, scale = 2)
+    private BigDecimal minCgpa;
 
     @Column(name = "max_backlogs", nullable = false)
     private Integer maxBacklogs;
@@ -35,7 +36,7 @@ public class EligibilityRuleEmbeddable {
     public EligibilityRuleEmbeddable() {
     }
 
-    public EligibilityRuleEmbeddable(List<Branch> allowedBranches, Double minCgpa, Integer maxBacklogs, List<String> requiredSkills) {
+    public EligibilityRuleEmbeddable(List<Branch> allowedBranches, BigDecimal minCgpa, Integer maxBacklogs, List<String> requiredSkills) {
         this.allowedBranches = allowedBranches != null ? allowedBranches : new ArrayList<>();
         this.minCgpa = minCgpa;
         this.maxBacklogs = maxBacklogs;
@@ -50,11 +51,11 @@ public class EligibilityRuleEmbeddable {
         this.allowedBranches = allowedBranches != null ? allowedBranches : new ArrayList<>();
     }
 
-    public Double getMinCgpa() {
+    public BigDecimal getMinCgpa() {
         return minCgpa;
     }
 
-    public void setMinCgpa(Double minCgpa) {
+    public void setMinCgpa(BigDecimal minCgpa) {
         this.minCgpa = minCgpa;
     }
 

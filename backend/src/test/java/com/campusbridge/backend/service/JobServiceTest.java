@@ -17,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +47,7 @@ class JobServiceTest {
                 6.0,
                 LocalDate.of(2026, 12, 15),
                 "Sample description",
-                new EligibilityRuleEmbeddable(List.of(Branch.CS, Branch.IT), 7.5, 0, List.of("Java", "SQL")),
+                new EligibilityRuleEmbeddable(List.of(Branch.CS, Branch.IT), new BigDecimal("7.5"), 0, List.of("Java", "SQL")),
                 "recruiter-1"
         );
         sampleJob.setId("job-1");
@@ -62,7 +63,7 @@ class JobServiceTest {
                 6.0,
                 "2026-12-15",
                 "Sample description",
-                new EligibilityRuleDto(List.of(Branch.CS, Branch.IT), 7.5, 0, List.of("Java", "SQL"))
+                new EligibilityRuleDto(List.of(Branch.CS, Branch.IT), new BigDecimal("7.5"), 0, List.of("Java", "SQL"))
         );
 
         when(jobRepository.save(any(Job.class))).thenReturn(sampleJob);
@@ -106,7 +107,7 @@ class JobServiceTest {
                 9.0,
                 "2026-12-25",
                 "Updated description",
-                new EligibilityRuleDto(List.of(Branch.CS), 8.0, 0, List.of("Java"))
+                new EligibilityRuleDto(List.of(Branch.CS), new BigDecimal("8.0"), 0, List.of("Java"))
         );
 
         when(jobRepository.findById("job-1")).thenReturn(Optional.of(sampleJob));
@@ -128,7 +129,7 @@ class JobServiceTest {
                 10.0,
                 "2026-12-30",
                 "Desc",
-                new EligibilityRuleDto(List.of(Branch.CS), 7.0, 0, List.of("Java"))
+                new EligibilityRuleDto(List.of(Branch.CS), new BigDecimal("7.0"), 0, List.of("Java"))
         );
 
         when(jobRepository.findById("job-1")).thenReturn(Optional.of(sampleJob));

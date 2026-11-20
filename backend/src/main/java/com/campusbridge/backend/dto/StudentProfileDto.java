@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class StudentProfileDto {
     @NotNull(message = "CGPA is required")
     @DecimalMin(value = "0.0", message = "CGPA must be at least 0.0")
     @DecimalMax(value = "10.0", message = "CGPA must be at most 10.0")
-    private Double cgpa;
+    private BigDecimal cgpa;
 
     @NotNull(message = "Active backlogs is required")
     @Min(value = 0, message = "Active backlogs cannot be negative")
@@ -28,7 +29,7 @@ public class StudentProfileDto {
     public StudentProfileDto() {
     }
 
-    public StudentProfileDto(Branch branch, Double cgpa, Integer activeBacklogs, List<String> skills) {
+    public StudentProfileDto(Branch branch, BigDecimal cgpa, Integer activeBacklogs, List<String> skills) {
         this.branch = branch;
         this.cgpa = cgpa;
         this.activeBacklogs = activeBacklogs;
@@ -43,11 +44,11 @@ public class StudentProfileDto {
         this.branch = branch;
     }
 
-    public Double getCgpa() {
+    public BigDecimal getCgpa() {
         return cgpa;
     }
 
-    public void setCgpa(Double cgpa) {
+    public void setCgpa(BigDecimal cgpa) {
         this.cgpa = cgpa;
     }
 

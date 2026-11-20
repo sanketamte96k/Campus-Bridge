@@ -32,7 +32,7 @@ The CampusBridge platform digitizes and automates institutional campus recruitme
 ### 1.4 References
 - IEEE Std 830-1998: Recommended Practice for Software Requirements Specifications.
 - Spring Boot & Spring Security Documentation (v3.x).
-- PostgreSQL 16 Documentation.
+- MySQL 8 Documentation.
 - React 18 & TypeScript Documentation.
 - FastAPI Specification & OpenAPI Standards.
 
@@ -41,13 +41,13 @@ The CampusBridge platform digitizes and automates institutional campus recruitme
 ## 2. Overall Description
 
 ### 2.1 Product Perspective
-CampusBridge is a web-based, client-server platform. It replaces decentralized spreadsheets, manual record verification, and disconnected messaging channels with a unified web portal powered by a Spring Boot backend, a PostgreSQL relational database, and an auxiliary Python FastAPI AI microservice for intelligent career analysis.
+CampusBridge is a web-based, client-server platform. It replaces decentralized spreadsheets, manual record verification, and disconnected messaging channels with a unified web portal powered by a Spring Boot backend, a MySQL 8 relational database, and an auxiliary Python FastAPI AI microservice for intelligent career analysis.
 
 ```text
 +--------------------------------------------------------------------------+
 |                              CampusBridge                                |
 |                                                                          |
-|  [React Web Client] <---> [Spring Boot API] <---> [PostgreSQL Database]  |
+|  [React Web Client] <---> [Spring Boot API] <---> [MySQL 8 Database]     |
 |                                   |                                      |
 |                                   +---------> [FastAPI AI Service]       |
 |                                                      |                   |
@@ -77,7 +77,7 @@ CampusBridge is a web-based, client-server platform. It replaces decentralized s
 - **Client Side:** Modern web browsers (Google Chrome 110+, Mozilla Firefox 110+, Microsoft Edge 110+, Safari 16+).
 - **Backend Server:** Java Runtime Environment (JRE/JDK 21) running on Linux or Windows Server.
 - **AI Microservice:** Python 3.11+ runtime environment.
-- **Database Server:** PostgreSQL 16+.
+- **Database Server:** MySQL 8.0+.
 
 ### 2.5 Design and Implementation Constraints
 - **Architecture Simplicity:** Clean, modular structure without over-engineered distributed microservice meshes. The backend handles primary business logic; the AI service functions as a specialized processing unit.

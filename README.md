@@ -13,7 +13,7 @@ Frontend MVP complete (React 19, TypeScript, Tailwind CSS, TanStack Query). It r
 - [x] Rule-based eligibility engine with per-rule pass or fail reasons (unit tested)
 - [x] Apply and withdraw with duplicate and deadline rules (unit tested)
 - [x] Recruiter job posting, applicant review, and a validated status workflow (unit tested)
-- [ ] Spring Boot REST API with PostgreSQL and JWT
+- [ ] Spring Boot REST API with MySQL 8 and JWT
 - [ ] AI skill-gap analyzer, resume analyzer, and career assistant
 - [ ] Docker, CI/CD, and deployment
 
@@ -125,7 +125,7 @@ Each mock service keeps the same function signatures the real API calls will hav
 - **Testing:** JUnit 5 and Mockito
 
 ### Database
-- **Engine:** PostgreSQL 16
+- **Engine:** MySQL 8
 - **Design:** Relational schema with ACID guarantees and foreign key integrity
 
 ### AI and career intelligence service
@@ -167,7 +167,7 @@ CampusBridge follows a clean, decoupled architecture designed to remain beginner
                           v                     v
 +---------------------------+   +------------------------------------+
 |  Relational Database      |   |  AI Intelligence Service (FastAPI) |
-|  PostgreSQL 16            |   |  - Resume PDF Parser & ATS Scorer  |
+|  MySQL 8                  |   |  - Resume PDF Parser & ATS Scorer  |
 |  - Users & Roles          |   |  - Skill-Gap Analysis Engine       |
 |  - Academic Records       |   +-----------------+------------------+
 |  - Drives & Applications  |                     |
@@ -203,7 +203,7 @@ Campus-Bridge/
 
 ## Next steps
 
-1. **Spring Boot backend:** implement entities, PostgreSQL schema, JWT authentication, and rule-based eligibility evaluation in Java with JUnit test suites.
+1. **Spring Boot backend:** implement entities, MySQL 8 schema, JWT authentication, and rule-based eligibility evaluation in Java with JUnit test suites.
 2. **Connect frontend to API:** replace localStorage mock services in `src/services/` with Axios HTTP clients calling Spring Boot endpoints.
 3. **AI features:** implement the Python FastAPI microservice for ATS resume parsing and skill-gap career intelligence.
 4. **Docker and deployment:** create Dockerfiles, Docker Compose multi-container configuration, and automated deployment pipelines.

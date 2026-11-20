@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -68,7 +69,7 @@ class ApplicationServiceTest {
                 6.0,
                 LocalDate.now().plusDays(5),
                 "Sample description",
-                new EligibilityRuleEmbeddable(List.of(Branch.CS), 7.0, 0, List.of("Java")),
+                new EligibilityRuleEmbeddable(List.of(Branch.CS), new BigDecimal("7.0"), 0, List.of("Java")),
                 "recruiter-1"
         );
         openJob.setId("job-1");
@@ -80,15 +81,15 @@ class ApplicationServiceTest {
                 6.0,
                 LocalDate.now().minusDays(1),
                 "Past description",
-                new EligibilityRuleEmbeddable(List.of(Branch.CS), 7.0, 0, List.of("Java")),
+                new EligibilityRuleEmbeddable(List.of(Branch.CS), new BigDecimal("7.0"), 0, List.of("Java")),
                 "recruiter-1"
         );
         expiredJob.setId("job-expired");
 
-        eligibleProfile = new StudentProfileDto(Branch.CS, 8.0, 0, List.of("Java"));
+        eligibleProfile = new StudentProfileDto(Branch.CS, new BigDecimal("8.0"), 0, List.of("Java"));
         jobDto = new JobDto("job-1", "Java developer", "Northwind Technologies", "Pune", 6.0,
                 LocalDate.now().plusDays(5).toString(), "Sample description",
-                new EligibilityRuleDto(List.of(Branch.CS), 7.0, 0, List.of("Java")), "recruiter-1");
+                new EligibilityRuleDto(List.of(Branch.CS), new BigDecimal("7.0"), 0, List.of("Java")), "recruiter-1");
     }
 
     @Test

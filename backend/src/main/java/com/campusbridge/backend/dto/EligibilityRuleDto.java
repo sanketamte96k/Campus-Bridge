@@ -6,6 +6,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class EligibilityRuleDto {
     @NotNull(message = "Minimum CGPA is required")
     @DecimalMin(value = "0.0", message = "Minimum CGPA must be at least 0.0")
     @DecimalMax(value = "10.0", message = "Minimum CGPA cannot exceed 10.0")
-    private Double minCgpa;
+    private BigDecimal minCgpa;
 
     @NotNull(message = "Maximum backlogs is required")
     @Min(value = 0, message = "Maximum backlogs cannot be negative")
@@ -29,7 +30,7 @@ public class EligibilityRuleDto {
     public EligibilityRuleDto() {
     }
 
-    public EligibilityRuleDto(List<Branch> allowedBranches, Double minCgpa, Integer maxBacklogs, List<String> requiredSkills) {
+    public EligibilityRuleDto(List<Branch> allowedBranches, BigDecimal minCgpa, Integer maxBacklogs, List<String> requiredSkills) {
         this.allowedBranches = allowedBranches != null ? allowedBranches : new ArrayList<>();
         this.minCgpa = minCgpa;
         this.maxBacklogs = maxBacklogs;
@@ -44,11 +45,11 @@ public class EligibilityRuleDto {
         this.allowedBranches = allowedBranches != null ? allowedBranches : new ArrayList<>();
     }
 
-    public Double getMinCgpa() {
+    public BigDecimal getMinCgpa() {
         return minCgpa;
     }
 
-    public void setMinCgpa(Double minCgpa) {
+    public void setMinCgpa(BigDecimal minCgpa) {
         this.minCgpa = minCgpa;
     }
 

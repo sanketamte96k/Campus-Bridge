@@ -2,6 +2,7 @@ package com.campusbridge.backend.entity;
 
 import com.campusbridge.backend.enums.Branch;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +23,8 @@ public class StudentProfile {
     @Column(nullable = false, length = 20)
     private Branch branch;
 
-    @Column(nullable = false)
-    private Double cgpa;
+    @Column(nullable = false, precision = 4, scale = 2)
+    private BigDecimal cgpa;
 
     @Column(name = "active_backlogs", nullable = false)
     private Integer activeBacklogs;
@@ -36,7 +37,7 @@ public class StudentProfile {
     public StudentProfile() {
     }
 
-    public StudentProfile(Branch branch, Double cgpa, Integer activeBacklogs, List<String> skills) {
+    public StudentProfile(Branch branch, BigDecimal cgpa, Integer activeBacklogs, List<String> skills) {
         this.branch = branch;
         this.cgpa = cgpa;
         this.activeBacklogs = activeBacklogs;
@@ -74,11 +75,11 @@ public class StudentProfile {
         this.branch = branch;
     }
 
-    public Double getCgpa() {
+    public BigDecimal getCgpa() {
         return cgpa;
     }
 
-    public void setCgpa(Double cgpa) {
+    public void setCgpa(BigDecimal cgpa) {
         this.cgpa = cgpa;
     }
 

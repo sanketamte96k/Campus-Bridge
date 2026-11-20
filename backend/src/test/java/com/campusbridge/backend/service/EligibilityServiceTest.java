@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,14 +30,14 @@ class EligibilityServiceTest {
     void shouldPassWhenAllCriteriaMet() {
         StudentProfileDto profile = new StudentProfileDto(
                 Branch.CS,
-                8.5,
+                new BigDecimal("8.5"),
                 0,
                 List.of("Java", "Spring Boot", "SQL")
         );
 
         EligibilityRuleDto rules = new EligibilityRuleDto(
                 List.of(Branch.CS, Branch.IT),
-                7.5,
+                new BigDecimal("7.5"),
                 0,
                 List.of("Java", "SQL")
         );
@@ -53,14 +54,14 @@ class EligibilityServiceTest {
     void shouldFailWhenBranchNotAllowed() {
         StudentProfileDto profile = new StudentProfileDto(
                 Branch.CIVIL,
-                8.5,
+                new BigDecimal("8.5"),
                 0,
                 List.of("Java", "SQL")
         );
 
         EligibilityRuleDto rules = new EligibilityRuleDto(
                 List.of(Branch.CS, Branch.IT),
-                7.5,
+                new BigDecimal("7.5"),
                 0,
                 List.of("Java")
         );
@@ -80,14 +81,14 @@ class EligibilityServiceTest {
     void shouldPassWhenCgpaExactlyEqualsMinimum() {
         StudentProfileDto profile = new StudentProfileDto(
                 Branch.IT,
-                7.0,
+                new BigDecimal("7.0"),
                 0,
                 List.of("React", "TypeScript")
         );
 
         EligibilityRuleDto rules = new EligibilityRuleDto(
                 List.of(Branch.IT),
-                7.0,
+                new BigDecimal("7.0"),
                 0,
                 List.of("React")
         );
@@ -103,18 +104,45 @@ class EligibilityServiceTest {
     }
 
     @Test
+    @DisplayName("Should pass when student CGPA exactly equals minimum CGPA requirement with different BigDecimal scales")
+    void shouldPassWhenCgpaExactlyMatchesMinimumWithDifferentScales() {
+        StudentProfileDto profile = new StudentProfileDto(
+                Branch.CS,
+                new BigDecimal("7.50"), // scale 2
+                0,
+                List.of("Java")
+        );
+
+        EligibilityRuleDto rules = new EligibilityRuleDto(
+                List.of(Branch.CS),
+                new BigDecimal("7.5"), // scale 1: compareTo must be used, not equals
+                0,
+                List.of("Java")
+        );
+
+        EligibilityResultDto result = eligibilityService.evaluateEligibility(profile, rules);
+
+        assertTrue(result.isEligible(), "Student should be eligible when CGPA exactly equals minCgpa");
+        EligibilityCheckDto cgpaCheck = result.getChecks().stream()
+                .filter(c -> c.getRule() == EligibilityRuleKey.CGPA)
+                .findFirst().orElseThrow();
+        assertTrue(cgpaCheck.isPassed());
+        assertEquals("Your CGPA (7.50) meets the minimum of 7.5.", cgpaCheck.getMessage());
+    }
+
+    @Test
     @DisplayName("Should fail when CGPA is below minimum requirement")
     void shouldFailWhenCgpaBelowMinimum() {
         StudentProfileDto profile = new StudentProfileDto(
                 Branch.IT,
-                6.99,
+                new BigDecimal("6.99"),
                 0,
                 List.of("React", "TypeScript")
         );
 
         EligibilityRuleDto rules = new EligibilityRuleDto(
                 List.of(Branch.IT),
-                7.0,
+                new BigDecimal("7.0"),
                 0,
                 List.of("React")
         );
@@ -134,14 +162,14 @@ class EligibilityServiceTest {
     void shouldFailWhenBacklogsExceedMaximum() {
         StudentProfileDto profile = new StudentProfileDto(
                 Branch.CS,
-                8.0,
+                new BigDecimal("8.0"),
                 2,
                 List.of("Java")
         );
 
         EligibilityRuleDto rules = new EligibilityRuleDto(
                 List.of(Branch.CS),
-                7.0,
+                new BigDecimal("7.0"),
                 1,
                 List.of("Java")
         );
@@ -161,14 +189,14 @@ class EligibilityServiceTest {
     void shouldMatchSkillsCaseInsensitivelyWithWhitespace() {
         StudentProfileDto profile = new StudentProfileDto(
                 Branch.CS,
-                8.0,
+                new BigDecimal("8.0"),
                 0,
                 List.of(" java ", "SPRING BOOT", "sql")
         );
 
         EligibilityRuleDto rules = new EligibilityRuleDto(
                 List.of(Branch.CS),
-                7.0,
+                new BigDecimal("7.0"),
                 0,
                 List.of("Java", "Spring Boot", "SQL")
         );
@@ -188,14 +216,14 @@ class EligibilityServiceTest {
     void shouldIdentifyMissingSkills() {
         StudentProfileDto profile = new StudentProfileDto(
                 Branch.CS,
-                8.0,
+                new BigDecimal("8.0"),
                 0,
                 List.of("Java")
         );
 
         EligibilityRuleDto rules = new EligibilityRuleDto(
                 List.of(Branch.CS),
-                7.0,
+                new BigDecimal("7.0"),
                 0,
                 List.of("Java", "Spring Boot", "Docker")
         );

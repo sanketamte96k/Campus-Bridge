@@ -6,10 +6,17 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "applications", indexes = {
-        @Index(name = "idx_applications_job_id", columnList = "job_id"),
-        @Index(name = "idx_applications_user_id", columnList = "user_id")
-})
+@Table(
+        name = "applications",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uq_applications_job_user", columnNames = {"job_id", "user_id"})
+        },
+        indexes = {
+                @Index(name = "idx_applications_job_id", columnList = "job_id"),
+                @Index(name = "idx_applications_user_id", columnList = "user_id"),
+                @Index(name = "idx_applications_status", columnList = "status")
+        }
+)
 public class Application {
 
     @Id

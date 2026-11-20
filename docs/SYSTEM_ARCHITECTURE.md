@@ -43,7 +43,7 @@ CampusBridge employs a **modular monolithic backend** paired with a **decoupled 
 +------------------------------------+  +-------------------------------------------+
 |          PERSISTENCE LAYER         |  |             AI INTELLIGENCE LAYER         |
 |                                    |  |                                           |
-|       PostgreSQL 16 Database       |  |     Python 3.11+ / FastAPI Microservice   |
+|       MySQL 8 Database             |  |     Python 3.11+ / FastAPI Microservice   |
 |                                    |  |                                           |
 |  - Users, Roles, Permissions       |  |  +--------------------+                   |
 |  - Academic Records & Backlogs     |  |  | PDF Resume Parser  |                   |
@@ -104,8 +104,8 @@ The Spring Boot backend serves as the primary system of record, orchestrating al
 
 ---
 
-### 2.3 Persistence Layer (PostgreSQL 16)
-PostgreSQL handles relational data storage, enforcing ACID compliance and relational integrity.
+### 2.3 Persistence Layer (MySQL 8)
+MySQL 8 handles relational data storage, enforcing ACID compliance and relational integrity.
 
 - **Schema Design:**
   - `users` & `roles`: Authentication and role mappings.
@@ -152,7 +152,7 @@ The Python service functions as a specialized processing worker dedicated to uns
 This flow describes how a student applies to an open placement drive and how the system enforces eligibility criteria:
 
 ```text
-[Student Browser]       [Spring Boot Backend]          [PostgreSQL DB]
+[Student Browser]       [Spring Boot Backend]          [MySQL 8 DB]
        |                         |                           |
        | 1. GET /drives/open     |                           |
        |------------------------>|                           |
