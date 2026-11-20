@@ -207,6 +207,30 @@ public class ApplicationService {
         return new RecruiterStatsDto(totalJobs, totalApplications, shortlisted, selected, rejected, pendingReview);
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, Long> getApplicantCounts(String recruiterId) {
+        List<Job> jobs = jobRepository.findByPostedBy(recruiterId);
+        if (jobs.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<String> jobIds = jobs.stream().map(Job::getId).collect(Collectors.toList());
+        List<Application> applications = applicationRepository.findByJobIdIn(jobIds);
+
+        Map<String, Long> counts = new HashMap<>();
+        for (String jobId : jobIds) {
+            counts.put(jobId, 0L);
+        }
+
+        for (Application app : applications) {
+            if (app.getStatus() != ApplicationStatus.WITHDRAWN) {
+                counts.put(app.getJobId(), counts.getOrDefault(app.getJobId(), 0L) + 1L);
+            }
+        }
+
+        return counts;
+    }
+
     public ApplicationDto toDto(Application app) {
         if (app == null) {
             return null;

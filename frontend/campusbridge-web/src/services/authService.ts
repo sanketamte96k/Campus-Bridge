@@ -1,93 +1,47 @@
+import apiClient from './apiClient';
 import type { LoginInput, RegisterInput, Role, User } from '../types';
 
-interface StoredUser extends User {
-  password: string;
+interface AuthResponse {
+  token: string;
+  type: string;
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
 }
 
-const USERS_STORAGE_KEY = 'cb_users';
 const SESSION_STORAGE_KEY = 'cb_session';
-
-const delay = (ms = 400): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
-function getStoredUsers(): StoredUser[] {
-  try {
-    const raw = localStorage.getItem(USERS_STORAGE_KEY);
-    if (!raw) {
-      return [];
-    }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as StoredUser[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveStoredUsers(users: StoredUser[]): void {
-  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-}
-
-// Note: These mock methods will later be replaced by Axios calls to the Spring Boot backend with the same signatures.
+const TOKEN_STORAGE_KEY = 'cb_token';
 
 export async function register(input: RegisterInput): Promise<User> {
-  await delay();
-
-  const users = getStoredUsers();
-  const normalizedEmail = input.email.trim().toLowerCase();
-
-  const exists = users.some(
-    (user) => user.email.toLowerCase() === normalizedEmail
-  );
-
-  if (exists) {
-    throw new Error('An account with this email already exists.');
-  }
-
-  const user: User = {
-    id: crypto.randomUUID(),
+  const res = await apiClient.post<AuthResponse>('/api/auth/register', {
     name: input.name.trim(),
-    email: normalizedEmail,
-    role: input.role,
-  };
-
-  const storedUser: StoredUser = {
-    ...user,
+    email: input.email.trim().toLowerCase(),
     password: input.password,
-  };
+    role: input.role,
+  });
 
-  users.push(storedUser);
-  saveStoredUsers(users);
+  const { token, id, name, email, role } = res.data;
+  const user: User = { id, name, email, role };
 
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
   localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+
   return user;
 }
 
 export async function login(input: LoginInput): Promise<User> {
-  await delay();
+  const res = await apiClient.post<AuthResponse>('/api/auth/login', {
+    email: input.email.trim().toLowerCase(),
+    password: input.password,
+  });
 
-  const users = getStoredUsers();
-  const normalizedEmail = input.email.trim().toLowerCase();
+  const { token, id, name, email, role } = res.data;
+  const user: User = { id, name, email, role };
 
-  const matchingUser = users.find(
-    (user) =>
-      user.email.toLowerCase() === normalizedEmail &&
-      user.password === input.password
-  );
-
-  if (!matchingUser) {
-    throw new Error('Email or password is incorrect.');
-  }
-
-  const user: User = {
-    id: matchingUser.id,
-    name: matchingUser.name,
-    email: matchingUser.email,
-    role: matchingUser.role as Role,
-  };
-
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
   localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+
   return user;
 }
 
@@ -98,7 +52,14 @@ export function getSession(): User | null {
       return null;
     }
     const parsed = JSON.parse(raw) as User;
-    if (parsed && typeof parsed === 'object' && parsed.id && parsed.email && parsed.role) {
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      typeof parsed.id === 'string' &&
+      typeof parsed.email === 'string' &&
+      typeof parsed.name === 'string' &&
+      typeof parsed.role === 'string'
+    ) {
       return parsed;
     }
     return null;
@@ -108,5 +69,6 @@ export function getSession(): User | null {
 }
 
 export function logout(): void {
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
   localStorage.removeItem(SESSION_STORAGE_KEY);
 }

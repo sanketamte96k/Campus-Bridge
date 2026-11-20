@@ -220,4 +220,27 @@ class ApplicationServiceTest {
                 () -> applicationService.updateApplicationStatus("app-1", ApplicationStatus.SELECTED, "recruiter-1"));
         assertTrue(ex.getMessage().contains("Invalid status transition"));
     }
+
+    @Test
+    @DisplayName("Should return applicant counts per job excluding withdrawn")
+    void shouldReturnApplicantCountsExcludingWithdrawn() {
+        Job job1 = new Job("Job 1", "Northwind", "Pune", 6.0, LocalDate.now().plusDays(10), "Desc", null, "recruiter-1");
+        job1.setId("job-1");
+        Job job2 = new Job("Job 2", "Northwind", "Pune", 8.0, LocalDate.now().plusDays(10), "Desc", null, "recruiter-1");
+        job2.setId("job-2");
+
+        when(jobRepository.findByPostedBy("recruiter-1")).thenReturn(List.of(job1, job2));
+
+        Application app1 = new Application("job-1", "student-1", ApplicationStatus.APPLIED);
+        Application app2 = new Application("job-1", "student-2", ApplicationStatus.SHORTLISTED);
+        Application app3 = new Application("job-1", "student-3", ApplicationStatus.WITHDRAWN);
+        Application app4 = new Application("job-2", "student-1", ApplicationStatus.SELECTED);
+
+        when(applicationRepository.findByJobIdIn(List.of("job-1", "job-2"))).thenReturn(List.of(app1, app2, app3, app4));
+
+        java.util.Map<String, Long> counts = applicationService.getApplicantCounts("recruiter-1");
+
+        assertEquals(2L, counts.get("job-1"));
+        assertEquals(1L, counts.get("job-2"));
+    }
 }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/recruiter")
@@ -33,6 +34,12 @@ public class RecruiterController {
     public ResponseEntity<List<JobDto>> getMyJobs(@AuthenticationPrincipal UserPrincipal principal) {
         List<JobDto> jobs = jobService.getJobsByRecruiter(principal.getId());
         return ResponseEntity.ok(jobs);
+    }
+
+    @GetMapping("/jobs/applicant-counts")
+    public ResponseEntity<Map<String, Long>> getJobApplicantCounts(@AuthenticationPrincipal UserPrincipal principal) {
+        Map<String, Long> counts = applicationService.getApplicantCounts(principal.getId());
+        return ResponseEntity.ok(counts);
     }
 
     @GetMapping("/jobs/{jobId}/applicants")
