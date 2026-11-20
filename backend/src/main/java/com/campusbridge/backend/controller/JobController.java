@@ -1,11 +1,9 @@
 package com.campusbridge.backend.controller;
 
 import com.campusbridge.backend.dto.*;
+import com.campusbridge.backend.exception.BadRequestException;
 import com.campusbridge.backend.security.UserPrincipal;
-import com.campusbridge.backend.service.ApplicationService;
-import com.campusbridge.backend.service.EligibilityService;
-import com.campusbridge.backend.service.JobService;
-import com.campusbridge.backend.service.StudentProfileService;
+import com.campusbridge.backend.service.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,17 +21,23 @@ public class JobController {
     private final ApplicationService applicationService;
     private final StudentProfileService profileService;
     private final EligibilityService eligibilityService;
+    private final SkillGapService skillGapService;
+    private final LearningPlanService learningPlanService;
 
     public JobController(
             JobService jobService,
             ApplicationService applicationService,
             StudentProfileService profileService,
-            EligibilityService eligibilityService
+            EligibilityService eligibilityService,
+            SkillGapService skillGapService,
+            LearningPlanService learningPlanService
     ) {
         this.jobService = jobService;
         this.applicationService = applicationService;
         this.profileService = profileService;
         this.eligibilityService = eligibilityService;
+        this.skillGapService = skillGapService;
+        this.learningPlanService = learningPlanService;
     }
 
     @GetMapping
@@ -101,5 +105,43 @@ public class JobController {
         StudentProfileDto profile = profileService.getProfileByUserId(principal.getId());
         EligibilityResultDto result = eligibilityService.evaluateEligibility(profile, job.getRules());
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{id}/skill-gap")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<SkillGapDto> getSkillGap(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        JobDto job = jobService.getJobById(id);
+        StudentProfileDto profile = profileService.getProfileByUserId(principal.getId());
+        if (profile == null) {
+            throw new BadRequestException("Complete your profile first.");
+        }
+        SkillGapDto gap = skillGapService.computeGap(profile, job.getRules());
+        return ResponseEntity.ok(gap);
+    }
+
+    @PostMapping("/{id}/learning-plan")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<LearningPlanDto> createLearningPlan(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        JobDto job = jobService.getJobById(id);
+        StudentProfileDto profile = profileService.getProfileByUserId(principal.getId());
+        if (profile == null) {
+            throw new BadRequestException("Complete your profile first.");
+        }
+        SkillGapDto gap = skillGapService.computeGap(profile, job.getRules());
+        LearningPlanDto plan = learningPlanService.generatePlan(
+                principal.getId(),
+                job.getId(),
+                job.getTitle(),
+                job.getRules() != null ? job.getRules().getRequiredSkills() : List.of(),
+                gap.getMissingSkills(),
+                profile.getSkills()
+        );
+        return ResponseEntity.ok(plan);
     }
 }

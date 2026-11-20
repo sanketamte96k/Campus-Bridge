@@ -16,6 +16,16 @@ import java.util.stream.Collectors;
 @Service
 public class EligibilityService {
 
+    public static Set<String> normalizeSkills(List<String> skills) {
+        if (skills == null) {
+            return java.util.Collections.emptySet();
+        }
+        return skills.stream()
+                .filter(s -> s != null && !s.isBlank())
+                .map(s -> s.trim().toLowerCase())
+                .collect(Collectors.toSet());
+    }
+
     public EligibilityResultDto evaluateEligibility(StudentProfileDto profile, EligibilityRuleDto rules) {
         if (profile == null || rules == null) {
             return new EligibilityResultDto(false, new ArrayList<>());
@@ -55,11 +65,7 @@ public class EligibilityService {
         checks.add(new EligibilityCheckDto(EligibilityRuleKey.BACKLOGS, backlogsPassed, backlogsMessage));
 
         // 4. Skills check (case-insensitive after trimming, preserves original job skill order/spelling)
-        Set<String> candidateSkills = (profile.getSkills() != null ? profile.getSkills() : List.<String>of())
-                .stream()
-                .filter(s -> s != null && !s.isBlank())
-                .map(s -> s.trim().toLowerCase())
-                .collect(Collectors.toSet());
+        Set<String> candidateSkills = normalizeSkills(profile.getSkills());
 
         List<String> requiredSkills = rules.getRequiredSkills() != null ? rules.getRequiredSkills() : List.of();
         List<String> missingSkills = requiredSkills.stream()

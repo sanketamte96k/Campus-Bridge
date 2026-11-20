@@ -83,3 +83,27 @@ export interface EligibilityResult {
   eligible: boolean;
   checks: EligibilityCheck[];
 }
+
+export interface SkillGap {
+  matchedSkills: string[];
+  missingSkills: string[];
+  cgpaGap: number;
+  backlogsOver: number;
+  branchAllowed: boolean;
+  requiredBranches: Branch[];
+  closeToEligible: boolean;
+}
+
+export interface LearningPlanStep {
+  skill: string;
+  whyItMatters: string;
+  practiceIdeas: string[];
+  estimatedHours: number;
+}
+
+export interface LearningPlan {
+  aiGenerated: boolean;
+  disclaimer: string;
+  summary: string;
+  steps: LearningPlanStep[];
+}

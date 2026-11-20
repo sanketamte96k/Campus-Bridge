@@ -74,6 +74,13 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE);
+                            response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Full authentication is required to access this resource\",\"path\":\"" + request.getRequestURI() + "\"}");
+                        })
+                )
                 .authorizeHttpRequests(auth -> auth
                         // Public Endpoints
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
@@ -95,6 +102,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/applications").hasRole("STUDENT")
                         .requestMatchers(HttpMethod.POST, "/api/applications/{id}/withdraw").hasRole("STUDENT")
                         .requestMatchers("/api/jobs/{id}/eligibility").hasRole("STUDENT")
+                        .requestMatchers(HttpMethod.GET, "/api/jobs/{id}/skill-gap").hasRole("STUDENT")
+                        .requestMatchers(HttpMethod.POST, "/api/jobs/{id}/learning-plan").hasRole("STUDENT")
 
                         // Authenticated Endpoints
                         .requestMatchers("/api/auth/me").authenticated()
