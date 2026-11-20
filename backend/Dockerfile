@@ -1,5 +1,5 @@
 # Stage 1: Build Application with Maven and JDK 21
-FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
+FROM maven:3.9-eclipse-temurin-26-alpine AS builder
 WORKDIR /build
 
 # Copy pom.xml and pre-fetch dependencies for Docker layer caching
