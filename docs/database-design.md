@@ -143,12 +143,7 @@ Normalized table storing skills possessed by a student.
 
 ---
 
-### 3.4. `skills` Table (Dropped in V6)
-Master skill dictionary created in V3 and dropped in V6 (skills are managed directly as collections in `student_profile_skills` and `job_required_skills`).
-
----
-
-### 3.5. `jobs` Table
+### 3.4. `jobs` Table
 Campus placement vacancies posted by recruiters.
 
 | Column | Type | Nullable | Default | Description |
@@ -177,7 +172,7 @@ Campus placement vacancies posted by recruiters.
 
 ---
 
-### 3.6. `job_allowed_branches` Table
+### 3.5. `job_allowed_branches` Table
 Normalized relation table for allowed departments per job vacancy.
 
 | Column | Type | Nullable | Default | Description |
@@ -192,7 +187,7 @@ Normalized relation table for allowed departments per job vacancy.
 
 ---
 
-### 3.7. `job_required_skills` Table
+### 3.6. `job_required_skills` Table
 Normalized relation table for required skills per job opening.
 
 | Column | Type | Nullable | Default | Description |
@@ -206,7 +201,7 @@ Normalized relation table for required skills per job opening.
 
 ---
 
-### 3.8. `applications` Table
+### 3.7. `applications` Table
 Tracks candidate submissions through the campus placement pipeline.
 
 | Column | Type | Nullable | Default | Description |
@@ -281,10 +276,10 @@ stateDiagram-v2
 |---|---|---|---|
 | **V1** | `V1__create_users.sql` | Create users table | Core authentication & role grants (`STUDENT`, `RECRUITER`) |
 | **V2** | `V2__create_student_profiles.sql` | Create student_profiles table | Academic metrics, CGPA boundaries, and branch constraints |
-| **V3** | `V3__create_skills.sql` | Create skills & student_profile_skills | Normalized skills collection and master skill dictionary |
+| **V3** | `V3__create_skills.sql` | Create student_profile_skills relation | Normalized skills collection for student profiles |
 | **V4** | `V4__create_jobs.sql` | Create jobs & eligibility relations | Job vacancies, compensation, deadlines, allowed branches & required skills |
 | **V5** | `V5__create_applications.sql` | Create applications table | Application records, lifecycle statuses, and `uq_applications_job_user` unique constraint |
-| **V6** | `V6__schema_hardening.sql` | Schema hardening & integrity enforcement | Convert CGPA/min_CGPA to DECIMAL(4,2), rename password to password_hash, ON DELETE RESTRICT on applications, drop unused skills table |
+| **V6** | `V6__schema_hardening.sql` | Schema hardening & integrity enforcement | Convert CGPA/min_CGPA to DECIMAL(4,2), rename password to password_hash, ON DELETE RESTRICT on applications |
 
 ---
 

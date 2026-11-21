@@ -1,0 +1,5 @@
+# EnvironmentPostProcessor for CampusBridge configuration
+org.springframework.boot.EnvironmentPostProcessor=com.campusbridge.backend.config.DotEnvEnvironmentPostProcessor
+
+# ApplicationContextInitializer for CampusBridge configuration
+org.springframework.context.ApplicationContextInitializer=com.campusbridge.backend.config.DotEnvEnvironmentPostProcessor

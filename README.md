@@ -1,147 +1,116 @@
-# CampusBridge – Intelligent campus recruitment and career intelligence platform
+# CampusBridge
+
+A role-based campus recruitment and placement management platform featuring rule-based eligibility evaluation, lifecycle state enforcement, and advisory skill gap roadmaps.
 
 [![CI](https://github.com/sanketamte96k/Campus-Bridge/actions/workflows/ci.yml/badge.svg)](https://github.com/sanketamte96k/Campus-Bridge/actions/workflows/ci.yml)
 
-Continuous integration runs automated verification on every push and pull request to `main`.
-It validates the Spring Boot test suite against MySQL 8, executes frontend linting, tests, and production builds, and verifies Docker image creation.
-
-CampusBridge is a centralized, role-based campus recruitment management and career intelligence platform designed for higher education institutions. It connects students, corporate recruiters, placement officers (TPOs), and administrators, while integrating AI-driven career guidance and resume intelligence.
+Continuous integration runs automated verification on every push and pull request to `main`. It validates the Spring Boot test suite against a MySQL 8 service container, executes frontend linting, unit tests, and production builds, and builds container images.
 
 ---
 
-## Project status
+## What it does
 
-Frontend MVP complete (React 19, TypeScript, Tailwind CSS, TanStack Query). It runs on mock services stored in the browser (localStorage), so the full placement workflow works without a backend. The Spring Boot API is the next phase.
+### Student
+- Maintain an academic profile with engineering branch, CGPA, active backlogs, and technical skills.
+- Browse campus job vacancies with real-time, criterion-by-criterion eligibility status.
+- Apply to eligible vacancies with single-active application enforcement and withdraw while pending review.
+- Inspect deterministic skill gaps for ineligible jobs and generate advisory learning roadmaps.
 
-- [x] Role-based auth (student, recruiter) with protected routes
-- [x] Student profile and job browsing with search
-- [x] Rule-based eligibility engine with per-rule pass or fail reasons (unit tested)
-- [x] Apply and withdraw with duplicate and deadline rules (unit tested)
-- [x] Recruiter job posting, applicant review, and a validated status workflow (unit tested)
-- [ ] Spring Boot REST API with MySQL 8 and JWT
-- [ ] AI skill-gap analyzer, resume analyzer, and career assistant
-- [ ] Docker, CI/CD, and deployment
-
----
-
-## Features
-
-- **Students:** save an academic profile, browse jobs, see exactly why they are or aren't eligible for each job, apply, withdraw, and track status.
-- **Recruiters:** post jobs with eligibility rules, review applicants with an eligibility summary, and move candidates through Shortlisted, Selected, or Rejected.
-- **Eligibility engine:** a pure TypeScript function that checks branch, CGPA, active backlogs, and required skills, and returns a reason for each rule. It is rule-based, not AI.
-- **Status workflow:** allowed transitions are defined in one tested function (for example, a rejected candidate can never return to shortlisted).
+### Recruiter
+- Post job vacancies with specific eligibility criteria (allowed branches, minimum CGPA, backlog limit, required skills).
+- Review job applicants with automated eligibility verification summaries.
+- Advance candidates through recruitment stages (Applied, Shortlisted, Selected, Rejected) via an enforced state machine.
+- Monitor active placement drives, total application counts, and candidate pipeline distribution.
 
 ---
 
-## Problem statement
+## Screenshots
 
-Traditional campus placement operations are often plagued by:
-- **Disorganized communication:** reliance on scattered spreadsheets, messaging groups, and notice boards leads to missed deadlines and clerical errors.
-- **Manual eligibility screening:** placement officers spend hundreds of hours manually verifying CGPA, backlog criteria, and branch eligibility for each job drive.
-- **Lack of application transparency:** students experience anxiety due to opaque shortlisting stages and a lack of real-time application tracking.
-- **Unprepared candidates and skill gaps:** students apply to jobs without clear insight into how well their resumes match job descriptions, missing crucial domain skills.
-- **Reporting inefficiencies:** placement cells struggle to compile accredited, real-time institutional placement reports for audits and accreditation bodies (e.g., NAAC, NBA).
+*Note: Screenshot image files (`01-...png` through `06-...png`) are not currently committed to `docs/screenshots/`. To generate them, run the platform locally or in Docker and capture the student job search, eligibility breakdown, skill gap roadmap, recruiter posting, and applicant review interfaces.*
 
 ---
 
-## Objectives
+## Highlights
 
-1. **Automate drive and eligibility management:** provide an automated rule engine that computes student eligibility against drive criteria instantly.
-2. **Deliver end-to-end transparency:** offer real-time tracking across every stage: application, shortlisting, technical tests, interviews, and final offers.
-3. **Embed AI-powered career intelligence:** equip students with an AI Resume Analyzer for ATS feedback and an AI Career Assistant for targeted skill-gap roadmaps.
-4. **Empower placement cells with actionable analytics:** generate live dashboards and exportable institutional reports on placement rates, CTC distributions, and recruiter trends.
-5. **Ensure secure, role-based collaboration:** implement enterprise-grade authentication and authorization tailored specifically for academic environments.
+- **Rule-based eligibility engine:** Evaluates department, CGPA, backlogs, and technical skills as a pure function in both Java and TypeScript, returning individual pass/fail reasons for each criterion.
+- **Enforced status state machine:** Application progression (Applied, Shortlisted, Selected, Rejected, Withdrawn) is strictly governed by an immutable transition map in the service layer, preventing invalid or backwards lifecycle jumps.
+- **Single active application rule:** Database-level `UNIQUE (job_id, user_id)` constraint prevents concurrent duplicate submissions, with in-place row reactivation when reapplying after withdrawal.
+- **Advisory AI skill-gap roadmaps:** Deterministic gap calculation feeds an optional Gemini LLM workflow with zero PII transmission, input sanitization, JSON schema enforcement, sliding-window rate limiting, and an offline template fallback.
+- **Layered security model:** BCrypt password hashing, stateless HMAC-SHA256 JWT authorization, Spring Security method-level role checks, and database-verified record ownership on recruiter operations.
 
 ---
 
-## User roles
+## Architecture
 
-| Role | Key capabilities |
+```mermaid
+flowchart TD
+    Client["Client Browser (React 19 SPA)"]
+    Proxy["Nginx Reverse Proxy (:3000)"]
+    API["Spring Boot 4.1.2 API (:8080)"]
+    DB[("MySQL 8.0 Database (:3306)")]
+    LLM["Google Gemini API (Optional)"]
+
+    Client -->|HTTP / SPA Assets| Proxy
+    Proxy -->|Proxy /api/| API
+    API -->|JPA / Hibernate| DB
+    API -.->|Advisory Learning Plans| LLM
+```
+
+In containerized deployments, Nginx acts as a single-origin reverse proxy on port 3000, serving compiled React production assets and routing `/api/` traffic directly to the Spring Boot backend (`http://backend:8080`), eliminating the need for CORS. Spring Boot executes Flyway migrations on startup against MySQL 8, exposes RESTful endpoints, and interacts with an optional external Gemini API strictly for non-sensitive skill gap advice.
+
+---
+
+## Tech stack
+
+| Layer | Technology |
 | :--- | :--- |
-| **Student** | Builds profile, tracks academic verification, browses eligible placement drives, applies with 1-click, tracks status, schedules interview slots, analyzes resume with AI, and reviews skill-gap recommendations. |
-| **Recruiter** | Registers company profile, posts job openings and drive details, sets eligibility criteria, reviews shortlisted applicants, manages interview rounds, and releases offers. |
-| **Placement Officer (TPO)** | Approves recruiters and jobs, configures and manages campus placement drives, verifies student academic records, broadcasts updates, and monitors live drive progress. |
-| **Administrator** | Manages system accounts, assigns roles, configures academic departments and programs, oversees audit logs, and exports institutional compliance reports. |
+| **Frontend framework** | React 19, TypeScript |
+| **Frontend build tool** | Vite 8 |
+| **Routing & state** | React Router v7, TanStack Query v5 |
+| **Styling** | Tailwind CSS v4 |
+| **Backend framework** | Spring Boot 4.1.2 (Java 21 LTS) |
+| **Security & auth** | Spring Security, JJWT (HMAC-SHA256) |
+| **ORM & persistence** | Spring Data JPA, Hibernate ORM 7.4 |
+| **Database migrations** | Flyway |
+| **Database engine** | MySQL 8.0 |
+| **AI advisory client** | Spring RestClient (Google Gemini 2.5 Flash API) |
+| **Reverse proxy** | Nginx (Alpine) |
+| **Testing** | Vitest, Oxlint (Frontend); JUnit 5, Mockito (Backend) |
 
 ---
 
-## How to run the frontend
+## Getting started
 
-Prerequisite: Node.js 20 or newer.
+### Environment variables
 
-```bash
-cd frontend/campusbridge-web
-npm install
-npm run dev
-npm test
-npm run build
-```
+The application reads configuration values from the environment or a root `.env` file (copied from `.env.example`):
 
-The app opens on the URL Vite prints, usually http://localhost:5173.
+| Variable | Description | Example / Default |
+| :--- | :--- | :--- |
+| `DB_USERNAME` | MySQL database username | `campusbridge_user` |
+| `DB_PASSWORD` | MySQL database password | `your-db-password` |
+| `JWT_SECRET` | HMAC-SHA256 signing secret key (minimum 32 characters) | `your-secure-random-jwt-secret-at-least-32-chars-long` |
+| `DB_URL` | JDBC database URL (optional) | `jdbc:mysql://localhost:3306/campusbridge` |
+| `PORT` | Server HTTP port (optional) | `8080` |
+| `SPRING_PROFILES_ACTIVE` | Active Spring profile (optional) | `dev` |
+| `CORS_ALLOWED_ORIGINS` | Allowed CORS origins for standalone backend (optional) | `http://localhost:5173,http://localhost:5174` |
+| `LLM_API_KEY` | Google Gemini API key for live learning plans (optional) | `your-gemini-api-key` |
+| `LLM_MODEL` | Gemini model identifier (optional) | `gemini-2.5-flash` |
+| `LLM_TIMEOUT_MS` | Gemini client timeout in milliseconds (optional) | `15000` |
 
-### Try it
-1. Register an account as a recruiter and post a job with eligibility rules.
-2. Register an account as a student and complete the academic profile.
-3. Browse the jobs list, inspect the eligibility reasons, and submit an application.
-4. Log back in as the recruiter, view the applicants list, and shortlist the student.
-5. Log back in as the student to see the updated application status.
+### Demo accounts
 
----
+When started with `SPRING_PROFILES_ACTIVE=dev`, `DataInitializer` seeds test accounts on first startup:
+- **Student:** `student@campusbridge.edu` / `Password123!` (Alex Rivera, CS branch, CGPA 8.50)
+- **Recruiter:** `recruiter@campusbridge.edu` / `Password123!` (Sarah Jenkins)
 
-## Run the backend locally
+*(Local development and demo only; credentials are never created under production profiles).*
 
-Prerequisites: Java 21 (LTS) and MySQL 8 running locally on port 3306 with the `campusbridge` database created.
+### Run with Docker
 
-### Required environment variables
+*Note: Docker is verified by CI image build workflows. If running on a workstation with Docker and Docker Compose installed:*
 
-The backend requires the following environment variables to be set before starting. There are no hardcoded secret defaults in configuration files:
-- `DB_USERNAME`: Database username (e.g. `root`)
-- `DB_PASSWORD`: Database password (required; application fails to start if omitted)
-- `JWT_SECRET`: HMAC-SHA256 signing secret key (required; must be at least 32 characters long)
-
-Optional environment variables:
-- `DB_URL`: JDBC database URL (defaults to `jdbc:mysql://localhost:3306/campusbridge`)
-- `PORT`: Server HTTP port (defaults to `8080`)
-- `SPRING_PROFILES_ACTIVE`: Active profile (set to `dev` to enable demo seed accounts)
-- `CORS_ALLOWED_ORIGINS`: Allowed CORS origins (defaults to `http://localhost:5173,http://localhost:5174`)
-
-### Test database setup
-
-To run automated backend tests in isolation, create the dedicated test schema and assign user privileges:
-
-```sql
-CREATE DATABASE campusbridge_test;
-GRANT ALL PRIVILEGES ON campusbridge_test.* TO 'campusbridge'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-### PowerShell example
-
-```powershell
-# Set required environment variables using placeholders
-$env:DB_USERNAME = "root"
-$env:DB_PASSWORD = "your-database-password"
-$env:JWT_SECRET = "your-secure-random-jwt-secret-at-least-32-chars-long"
-
-# Run automated tests
-cd backend
-.\mvnw.cmd test
-
-# Start the Spring Boot application
-.\mvnw.cmd spring-boot:run
-```
-
----
-
-## Run with Docker
-
-Run the entire platform (MySQL 8 database, Spring Boot API, and React frontend) with a single command.
-
-### Prerequisites
-- Docker and Docker Compose (Docker Desktop or Docker Engine v20.10+).
-
-### Quick start
-1. Copy the environment configuration template to `.env` and adjust passwords if needed:
+1. Copy the configuration template:
    ```bash
    cp .env.example .env
    ```
@@ -149,172 +118,156 @@ Run the entire platform (MySQL 8 database, Spring Boot API, and React frontend) 
    ```bash
    docker compose up --build
    ```
-3. Open your browser at **http://localhost:3000**. Nginx serves the React SPA and proxies all `/api/` requests directly to the Spring Boot backend (`http://backend:8080`).
+3. Open your browser at **http://localhost:3000**. Nginx serves the React SPA and proxies all `/api/` requests directly to `http://backend:8080`.
 
-### Stopping and data management
-- **Stop containers:**
-  ```bash
-  docker compose down
-  ```
-- **Wipe persistent database volume:**
-  ```bash
-  docker compose down -v
-  ```
+### Run locally without Docker
 
-### Seeded demo logins (Local development only)
-When running with the default `SPRING_PROFILES_ACTIVE=dev` profile, `DataInitializer` automatically seeds test accounts on first database initialization:
-- **Recruiter:** `recruiter@campusbridge.edu` / `Password123!`
-- **Student:** `student@campusbridge.edu` / `Password123!`
+#### Prerequisites
+- Java 21 LTS
+- Node.js 20 or newer
+- MySQL 8.0 running locally on port 3306
 
-*(Note: These seeded credentials are for local demo and testing only; they are not created when running under production profiles.)*
-
-### Troubleshooting
-
-| Issue | Cause | Solution |
-| :--- | :--- | :--- |
-| **Port in use** | Host port 3000 or 3307 is already bound | Free the port or adjust the host-side port binding in `docker-compose.yml`. |
-| **Backend unhealthy** | Database is starting up or migration failed | Run `docker compose logs backend` to inspect logs; verify database health status with `docker compose ps`. |
-| **DB password mismatch** | `.env` passwords changed after volume creation | Run `docker compose down -v` first to wipe the stale volume, then re-run `docker compose up --build`. |
-
----
-
-## Frontend structure
-
-```text
-frontend/campusbridge-web/src/
-├── components/          # Reusable UI elements (Button, Field, JobCard, StatusBadge)
-├── features/            # Domain logic split by feature (auth, eligibility, applications, profile, recruiter)
-├── layouts/             # Page layouts for auth and role-based dashboards
-├── pages/               # Route views for auth, student, and recruiter flows
-├── routes/              # Routing configuration, protected route guards, and navigation definitions
-├── services/            # Mock APIs backed by localStorage that will become real API calls
-└── types/               # TypeScript interfaces, unions, and shared data models
+#### 1. Database setup
+Ensure the development and test databases exist in MySQL:
+```sql
+CREATE DATABASE IF NOT EXISTS campusbridge;
+CREATE DATABASE IF NOT EXISTS campusbridge_test;
+CREATE USER IF NOT EXISTS 'campusbridge_user'@'localhost' IDENTIFIED BY 'your-password';
+GRANT ALL PRIVILEGES ON campusbridge.* TO 'campusbridge_user'@'localhost';
+GRANT ALL PRIVILEGES ON campusbridge_test.* TO 'campusbridge_user'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-Each mock service keeps the same function signatures the real API calls will have, so swapping in the Spring Boot backend will not require page changes.
+#### 2. Start the backend
+Configure your `.env` in the project root, then run:
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+The backend automatically runs Flyway migrations, connects to `campusbridge`, and listens on `http://localhost:8080`.
+
+#### 3. Start the frontend
+In a separate terminal:
+```powershell
+cd frontend/campusbridge-web
+npm install
+npm run dev
+```
+The frontend opens on `http://localhost:5173`.
 
 ---
 
-## Screenshots
+## API overview
 
-<!-- Add screenshots of login, jobs with eligibility, and the recruiter applicants page here -->
+The Spring Boot backend exposes the following REST endpoints. See [docs/API.md](docs/API.md) for full request/response payloads and error codes.
 
----
-
-## Technology stack
-
-### Frontend
-- **Framework and language:** React 19 with TypeScript
-- **Build tool:** Vite
-- **Routing:** React Router v7
-- **Data fetching:** TanStack Query
-- **Styling:** Tailwind CSS v4
-- **Testing:** Vitest
-
-### Backend (planned next phase)
-- **Language and runtime:** Java 21 (LTS)
-- **Framework:** Spring Boot 3.x
-- **Security:** Spring Security and JWT (JSON Web Tokens)
-- **Persistence and ORM:** Spring Data JPA and Hibernate
-- **Build tool:** Apache Maven
-- **Testing:** JUnit 5 and Mockito
-
-### Database
-- **Engine:** MySQL 8
-- **Design:** Relational schema with ACID guarantees and foreign key integrity
-
-### AI and career intelligence service
-- **Runtime and framework:** Python 3.11+ with FastAPI
-- **Data validation:** Pydantic
-- **PDF processing:** PyPDF / pdfplumber
-- **AI integration:** External LLM API (Google Gemini / OpenAI) for structured JSON evaluations
-
-### Development tools
-- **Version control:** Git and GitHub
-- **API testing:** Postman
-- **Containerization (planned):** Docker and Docker Compose
+| Method | Path | Role | Purpose |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Public | Register new student or recruiter account |
+| `POST` | `/api/auth/login` | Public | Authenticate credentials and receive JWT |
+| `GET` | `/api/auth/me` | Authenticated | Retrieve current user profile and role |
+| `GET` | `/api/users/me` | Authenticated | Retrieve current user details |
+| `GET` | `/api/users/{id}` | Authenticated | Retrieve user by UUID |
+| `GET` | `/api/students/profile` | Student | Retrieve caller's academic profile |
+| `PUT` | `/api/students/profile` | Student | Update caller's academic profile |
+| `POST` | `/api/students/profile` | Student | Save caller's academic profile |
+| `GET` | `/api/students/{userId}/profile` | Authenticated | Retrieve student profile by user ID |
+| `GET` | `/api/jobs` | Public | List job vacancies (supports `?search=` query) |
+| `GET` | `/api/jobs/{id}` | Public | Retrieve job details by UUID |
+| `POST` | `/api/jobs` | Recruiter | Post a new job vacancy with criteria |
+| `PUT` | `/api/jobs/{id}` | Recruiter | Update an existing job vacancy (ownership enforced) |
+| `DELETE` | `/api/jobs/{id}` | Recruiter | Delete a job vacancy (ownership enforced) |
+| `GET` | `/api/jobs/{id}/applicants` | Recruiter | List applicants for job with eligibility breakdown |
+| `GET` | `/api/jobs/{id}/eligibility` | Student | Evaluate caller's eligibility for the job |
+| `GET` | `/api/jobs/{id}/skill-gap` | Student | Compute deterministic skill gap and proximity |
+| `POST` | `/api/jobs/{id}/learning-plan` | Student | Generate advisory AI learning plan for missing skills |
+| `POST` | `/api/applications` | Student | Apply to a job (enforces eligibility & single-active rule) |
+| `GET` | `/api/applications/my` | Student | List applications submitted by caller |
+| `POST` | `/api/applications/{id}/withdraw` | Student | Withdraw application (from `APPLIED` status only) |
+| `PATCH` | `/api/applications/{id}/status` | Recruiter | Advance applicant recruitment stage |
+| `PUT` | `/api/applications/{id}/status` | Recruiter | Advance applicant recruitment stage (alias) |
+| `GET` | `/api/recruiter/jobs` | Recruiter | List jobs posted by caller |
+| `GET` | `/api/recruiter/jobs/applicant-counts` | Recruiter | Map of job IDs to total applicant counts |
+| `GET` | `/api/recruiter/jobs/{jobId}/applicants` | Recruiter | Retrieve applicants for a specific recruiter job |
+| `GET` | `/api/recruiter/stats` | Recruiter | Aggregated recruiter drive and pipeline metrics |
 
 ---
 
-## Planned architecture
+## Testing and CI
 
-CampusBridge follows a clean, decoupled architecture designed to remain beginner-friendly while maintaining separation of concerns:
+### Automated test coverage
 
-```text
-               +-------------------------------------------+
-               |        Client Layer (Web Browser)         |
-               |        React + TypeScript + Vite          |
-               +---------------------+---------------------+
-                                     |
-                                HTTPS / REST
-                               (JWT Bearer)
-                                     v
-               +-------------------------------------------+
-               |         Core Backend (Spring Boot 3)      |
-               |   - Authentication & Role-Based Access    |
-               |   - Student & Company Management          |
-               |   - Drive Lifecycle & Eligibility Engine  |
-               |   - Placement Analytics & Reporting       |
-               +----------+---------------------+----------+
-                          |                     |
-                    JDBC / SQL             Internal REST
-                          |                     |
-                          v                     v
-+---------------------------+   +------------------------------------+
-|  Relational Database      |   |  AI Intelligence Service (FastAPI) |
-|  MySQL 8                  |   |  - Resume PDF Parser & ATS Scorer  |
-|  - Users & Roles          |   |  - Skill-Gap Analysis Engine       |
-|  - Academic Records       |   +-----------------+------------------+
-|  - Drives & Applications  |                     |
-+---------------------------+             External API (HTTPS)
-                                                  v
-                                        +-------------------+
-                                        | External LLM API  |
-                                        | (Gemini / OpenAI) |
-                                        +-------------------+
+- **Backend tests:** 76 automated tests across 14 test suites (0 failures, 0 errors, 0 skipped).
+  - Controller integration security tests (`AuthControllerIntegrationTest`, `SkillGapControllerIntegrationTest`).
+  - Core domain and rule engine tests (`EligibilityServiceTest`, `ApplicationServiceTest`, `ApplicationTransitionTest`, `JobServiceTest`).
+  - Security and rate limiting tests (`JwtServiceTest`, `PlanRateLimiterTest`).
+  - AI advisory pipeline tests (`SkillSanitizerTest`, `PlanOutputValidatorTest`, `LearningPlanServiceTest`).
+- **Frontend tests:** 24 unit tests across 3 suites (0 failures) covering eligibility evaluation, application preconditions, and status transitions.
+- **Frontend linting:** 0 warnings, 0 errors via Oxlint on 39 files with 116 rules.
+- **Frontend production build:** Clean `tsc -b && vite build` bundle creation.
+
+### Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push and pull request to `main`:
+1. **Backend job:** Boots an ephemeral MySQL 8 service container, runs Flyway migrations, and executes `./mvnw -B verify`.
+2. **Frontend job:** Sets up Node.js 20, runs `npm ci`, `npm run lint`, `npm test`, and `npm run build`.
+3. **Docker validation job:** Builds backend and frontend production container images using Docker Buildx to confirm build reproducibility.
+
+### Running tests locally
+
+#### Backend test execution
+```powershell
+cd backend
+.\mvnw.cmd clean test
+```
+*Tests automatically execute against the isolated `campusbridge_test` database schema without mutating development records.*
+
+#### Frontend test execution
+```powershell
+cd frontend/campusbridge-web
+npm run lint
+npm test -- --run
+npm run build
 ```
 
 ---
 
-## Repository structure
+## Security notes
 
-```text
-Campus-Bridge/
-│
-├── docs/
-│   ├── SRS.md                   # Software Requirements Specification
-│   ├── PROJECT_ROADMAP.md       # Phased implementation roadmap & deliverables
-│   └── SYSTEM_ARCHITECTURE.md   # Architectural designs, components, and data flows
-│
-├── frontend/
-│   └── campusbridge-web/        # React single-page application
-│
-├── README.md                    # Project overview and high-level documentation
-├── .gitignore                   # Version control exclusion rules
-└── .env.example                 # Environment variables template
-```
+- **Password storage:** Plaintext passwords are never stored. Credentials are encrypted using BCrypt one-way cryptographic hashing (`password_hash` column).
+- **Stateless token authorization:** Stateless HMAC-SHA256 JWT tokens with configurable expiration (default 24 hours). Secrets must be at least 32 characters (256-bit).
+- **Role and ownership authorization:** Endpoints enforce `@PreAuthorize("hasRole('STUDENT')")` or `@PreAuthorize("hasRole('RECRUITER')")`. Recruiter endpoints perform database checks ensuring recruiters can only update, delete, or review applicants for vacancies they posted.
+- **Zero secrets in source control:** Credentials and JWT secrets are supplied via environment variables and git-ignored `.env` files. Template `.env.example` contains only placeholders.
+- **Isolated seed data:** Demo accounts and initial job postings are loaded strictly under the `dev` profile by `DataInitializer`.
+- **AI safety and PII protection:** Zero student personal identifiable information (PII) is transmitted to the LLM. Only sanitized skill names and sanitized job titles are dispatched. Prompt injection attempts are neutralized by strict character whitelisting and length limits. LLM responses are parsed and clamped against schema bounds, with a fixed advisory disclaimer attached.
 
 ---
 
-## Next steps
+## Known limitations and roadmap
 
-1. **Spring Boot backend:** implement entities, MySQL 8 schema, JWT authentication, and rule-based eligibility evaluation in Java with JUnit test suites.
-2. **Connect frontend to API:** replace localStorage mock services in `src/services/` with Axios HTTP clients calling Spring Boot endpoints.
-3. **AI features:** implement the Python FastAPI microservice for ATS resume parsing and skill-gap career intelligence.
-4. **Docker and deployment:** create Dockerfiles, Docker Compose multi-container configuration, and automated deployment pipelines.
+### Known limitations
+- **JWT in localStorage:** Tokens are stored in browser `localStorage` for simplified SPA development. Hardening with `httpOnly`, `Secure`, `SameSite=Strict` cookies is planned for production.
+- **Node-local rate limiting and caching:** The sliding-window rate limiter (10 requests/hour) and 24-hour LRU plan cache operate in application memory and do not synchronize across horizontally scaled multi-instance clusters.
+- **Account lifecycle:** Self-service email verification, password reset, and multi-factor authentication (MFA) are not yet implemented.
+- **User roles:** The current release implements Student and Recruiter roles. Placement Officer (TPO) and Institutional Administrator roles remain in development.
+- **Pagination:** Job listings and applicant tables return full lists; pagination and cursor-based loading are not yet implemented.
+- **Client-side logic duplication:** The pure eligibility function is duplicated in the React frontend as UX hints, though the Spring Boot backend remains the sole authoritative gatekeeper.
+- **Deployment:** The platform is verified locally and in container builds, but is not yet deployed to cloud infrastructure.
+
+### Roadmap
+- Transition to `httpOnly` secure cookies with short-lived access tokens and refresh token rotation.
+- Distributed Redis caching and distributed token-bucket rate limiting for clustered deployments.
+- Placement Cell (TPO) dashboard for company approval, drive scheduling, and academic verification.
+- Resume text parser with automated keyword matching against job descriptions.
+- Database query pagination, full-text search indexing, and managed cloud deployment.
 
 ---
 
-## Future scope
+## Documentation links
 
-- **AI mock interview simulator:** voice-to-text interactive mock technical and behavioral interviews with automated rubric feedback.
-- **Alumni mentorship network:** connecting placed alumni with graduating students for resume reviews and interview preparation.
-- **Video proctored assessment integration:** native coding and aptitude assessments with automated proctoring.
-- **University federation support:** multi-campus tenant support enabling university systems to oversee multiple affiliated colleges.
-- **Mobile companion application:** push notifications and QR-code check-ins for on-campus physical recruitment drives.
-
----
-
-## License and attribution
-
-This project is developed for academic and campus recruitment management purposes. All documentation and architectural blueprints are maintained under the project repository.
+- [Architecture and Design Decisions](docs/DESIGN_DECISIONS.md)
+- [Database Architecture & Schema Specification](docs/database-design.md)
+- [REST API Specification](docs/API.md)
+- [Software Requirements Specification (SRS)](docs/SRS.md)
+- [System Architecture Specification](docs/SYSTEM_ARCHITECTURE.md)
+- [Project Roadmap](docs/PROJECT_ROADMAP.md)
