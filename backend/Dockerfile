@@ -27,4 +27,7 @@ USER appuser
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Configure JVM for small container environments:
+# -XX:MaxRAMPercentage=70: Limits heap memory to at most 70% of the container's available RAM, leaving headroom for JVM metaspace, thread stacks, and OS overhead to prevent cgroup OOM kills.
+# -XX:+UseSerialGC: Enables the single-threaded Serial Garbage Collector, minimizing memory footprint and CPU overhead in constrained single-core containers.
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=70", "-XX:+UseSerialGC", "-jar", "app.jar"]

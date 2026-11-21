@@ -3,6 +3,7 @@ package com.campusbridge.backend.security;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -20,8 +21,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -30,13 +34,19 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsServiceImpl userDetailsService;
+    private final Environment environment;
 
-    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:5174}")
+    @Value("${app.cors.allowed-origins:}")
     private String allowedOrigins;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserDetailsServiceImpl userDetailsService) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            UserDetailsServiceImpl userDetailsService,
+            Environment environment
+    ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
+        this.environment = environment;
     }
 
     @Bean
@@ -54,18 +64,58 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .toList();
-        configuration.setAllowedOrigins(origins);
+        Set<String> origins = new LinkedHashSet<>();
+
+        // 1. In development or test profiles (or default), allow Vite local development origins
+        if (isDevelopmentOrTestProfile()) {
+            origins.add("http://localhost:5173");
+            origins.add("http://localhost:5174");
+        }
+
+        // 2. Add any origins explicitly supplied through CORS_ALLOWED_ORIGINS / app.cors.allowed-origins
+        if (allowedOrigins != null && !allowedOrigins.isBlank()) {
+            Arrays.stream(allowedOrigins.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(origins::add);
+        }
+
+        configuration.setAllowedOrigins(new ArrayList<>(origins));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    private boolean isDevelopmentOrTestProfile() {
+        String[] activeProfiles = environment.getActiveProfiles();
+
+        // 1. If active profiles contain "prod", return false regardless of any other active profiles
+        for (String profile : activeProfiles) {
+            if ("prod".equalsIgnoreCase(profile)) {
+                return false;
+            }
+        }
+
+        // 2. Otherwise, if "dev" or "test" is active, return true
+        for (String profile : activeProfiles) {
+            if ("dev".equalsIgnoreCase(profile) || "test".equalsIgnoreCase(profile)) {
+                return true;
+            }
+        }
+
+        // 3. If no active profiles are configured, return true (local development default)
+        if (activeProfiles.length == 0) {
+            return true;
+        }
+
+        // 4. Otherwise, return false
+        return false;
     }
 
     @Bean
@@ -82,7 +132,8 @@ public class SecurityConfig {
                         })
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Public Endpoints
+                        // Preflight and Public Endpoints
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/{id}", "/api/jobs/search").permitAll()
                         .requestMatchers("/actuator/health").permitAll()

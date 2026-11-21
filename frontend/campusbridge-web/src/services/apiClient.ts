@@ -1,7 +1,9 @@
 import axios, { AxiosError } from 'axios';
 
 const envBaseUrl = import.meta.env.VITE_API_BASE_URL;
-const baseURL = typeof envBaseUrl === 'string' ? envBaseUrl : 'http://localhost:8080';
+const baseURL = typeof envBaseUrl === 'string'
+  ? envBaseUrl.trim()
+  : (import.meta.env.DEV ? 'http://localhost:8080' : '');
 
 export const apiClient = axios.create({
   baseURL,

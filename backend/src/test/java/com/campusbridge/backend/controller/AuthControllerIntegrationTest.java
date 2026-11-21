@@ -15,9 +15,12 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -102,5 +105,83 @@ class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(jobRequest)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("OPTIONS /api/auth/register should return valid CORS headers for origin http://localhost:5174")
+    void shouldReturnCorsHeadersForRegisterPreflight5174() throws Exception {
+        mockMvc.perform(options("/api/auth/register")
+                        .header("Origin", "http://localhost:5174")
+                        .header("Access-Control-Request-Method", "POST")
+                        .header("Access-Control-Request-Headers", "content-type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5174"))
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"))
+                .andExpect(header().string("Access-Control-Allow-Methods", containsString("POST")));
+    }
+
+    @Test
+    @DisplayName("OPTIONS /api/auth/register should return valid CORS headers for origin http://localhost:5173")
+    void shouldReturnCorsHeadersForRegisterPreflight5173() throws Exception {
+        mockMvc.perform(options("/api/auth/register")
+                        .header("Origin", "http://localhost:5173")
+                        .header("Access-Control-Request-Method", "POST")
+                        .header("Access-Control-Request-Headers", "content-type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"))
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"))
+                .andExpect(header().string("Access-Control-Allow-Methods", containsString("POST")));
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/register with Origin header should return CORS headers and create user")
+    void shouldAllowRegistrationWithCorsHeader() throws Exception {
+        String uniqueEmail = "cors_" + UUID.randomUUID().toString().substring(0, 8) + "@campusbridge.edu";
+        Map<String, Object> registerRequest = Map.of(
+                "name", "CORS Candidate",
+                "email", uniqueEmail,
+                "password", "SecurePass123!",
+                "role", "STUDENT"
+        );
+
+        mockMvc.perform(post("/api/auth/register")
+                        .header("Origin", "http://localhost:5174")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5174"))
+                .andExpect(header().string("Access-Control-Allow-Credentials", "true"))
+                .andExpect(jsonPath("$.token").isString())
+                .andExpect(jsonPath("$.email").value(uniqueEmail));
+    }
+
+    @Test
+    @DisplayName("OPTIONS /api/auth/register with unconfigured origin should be rejected with 403 Forbidden")
+    void shouldRejectPreflightForUnconfiguredOrigin() throws Exception {
+        mockMvc.perform(options("/api/auth/register")
+                        .header("Origin", "http://unconfigured-origin.test")
+                        .header("Access-Control-Request-Method", "POST")
+                        .header("Access-Control-Request-Headers", "content-type"))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+    }
+
+    @Test
+    @DisplayName("POST /api/auth/register with unconfigured origin should not return CORS allow-origin header")
+    void shouldNotReturnCorsHeadersForUnconfiguredOrigin() throws Exception {
+        String uniqueEmail = "cors_rejected_" + UUID.randomUUID().toString().substring(0, 8) + "@campusbridge.edu";
+        Map<String, Object> registerRequest = Map.of(
+                "name", "Unconfigured Origin Candidate",
+                "email", uniqueEmail,
+                "password", "SecurePass123!",
+                "role", "STUDENT"
+        );
+
+        mockMvc.perform(post("/api/auth/register")
+                        .header("Origin", "http://unconfigured-origin.test")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
     }
 }

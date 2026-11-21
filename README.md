@@ -157,6 +157,28 @@ The frontend opens on `http://localhost:5173`.
 
 ---
 
+## Deployment notes
+
+- **Cold starts on free tiers:** Free hosting instances (such as Render, Railway, or Fly.io free tiers) sleep after periods of inactivity. The first incoming HTTP request spins up the container, which can take approximately 50 to 60 seconds. Subsequent requests respond with standard low latency.
+- **Production account provisioning:** The production profile (`SPRING_PROFILES_ACTIVE=prod`) disables `DataInitializer`. No default demo accounts are seeded in production; visitors register their own accounts through the `/register` portal as a Student or Recruiter.
+- **Backend environment variables:** The hosted backend requires the following environment variables configured on the platform (names and placeholders only):
+
+| Variable | Description / Placeholder |
+| :--- | :--- |
+| `DB_URL` | `jdbc:mysql://<host>:<port>/<database>?useSSL=true` |
+| `DB_USERNAME` | `<database-username>` |
+| `DB_PASSWORD` | `<database-password>` |
+| `JWT_SECRET` | `<at-least-32-characters-random-secret>` |
+| `JWT_EXPIRATION_MS` | `86400000` (optional, defaults to 24h) |
+| `CORS_ALLOWED_ORIGINS` | `https://<your-frontend-domain>` |
+| `PORT` | Provided by hosting platform (defaults to `8080`) |
+| `SPRING_PROFILES_ACTIVE` | `prod` |
+| `LLM_API_KEY` | `<gemini-api-key>` (optional; offline template fallback used if omitted) |
+| `LLM_MODEL` | `gemini-2.5-flash` (optional) |
+| `LLM_BASE_URL` | `https://generativelanguage.googleapis.com` (optional) |
+
+---
+
 ## API overview
 
 The Spring Boot backend exposes the following REST endpoints. See [docs/API.md](docs/API.md) for full request/response payloads and error codes.
